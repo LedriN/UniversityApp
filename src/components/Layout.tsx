@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Users, Plus, Settings, LogOut, GraduationCap, Home, Wifi, WifiOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import logo from '../../dist/assets/logo.svg';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,20 +30,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="flex flex-col w-64 bg-white shadow-lg">
-          <div className="flex h-16 items-center justify-center border-b border-gray-200 relative">
-            {/* Connection Status */}
-            <div className="absolute top-4 right-4">
-              {isOnline ? (
-                <Wifi className="h-4 w-4 text-green-500" title="Online - Connected to backend" />
-              ) : (
-                <WifiOff className="h-4 w-4 text-orange-500" title="Offline - Using demo data" />
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Universiteti</span>
-            </div>
+          <div className="flex p-5 items-center justify-center border-b border-gray-200 relative">
+              <img src={logo} alt="Logo" className="h-20 w-20" />
           </div>
           
           <nav className="mt-8 px-4 flex-1">
