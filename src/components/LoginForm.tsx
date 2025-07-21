@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import api from '../services/api';
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -19,6 +20,8 @@ const LoginForm: React.FC = () => {
     setError('');
 
     try {
+      const response = await api.post('/auth/login', { username, password });
+      localStorage.setItem('token', response.data.token); // Store token
       const success = await login(username, password);
       if (success) {
         navigate('/');

@@ -8,8 +8,9 @@ const router = express.Router();
 
 // Generate JWT token
 const generateToken = (userId) => {
+  // Always set token to expire in 24 hours (no cookie used)
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: '24h'
   });
 };
 
@@ -46,6 +47,7 @@ router.post('/login', [
     // Generate token
     const token = generateToken(user._id);
 
+    // Return token in response body (frontend should store in localStorage)
     res.json({
       user: {
         id: user._id,
@@ -54,7 +56,7 @@ router.post('/login', [
         role: user.role,
         createdAt: user.createdAt
       },
-      token
+      token // <-- JWT for 24h, not set as cookie
     });
   } catch (error) {
     console.error('Login error:', error);

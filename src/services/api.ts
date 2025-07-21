@@ -2,6 +2,21 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { apiConfig, endpoints } from '../config/api';
 import { Student, User, StudentFilters } from '../types';
 
+const api = axios.create({
+  baseURL: 'http://localhost:3001/api', // or your backend URL
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
+
 class ApiService {
   private api: AxiosInstance;
 
