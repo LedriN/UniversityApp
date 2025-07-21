@@ -172,7 +172,7 @@ const StudentForm: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Personale</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Emri *
@@ -250,7 +250,7 @@ const StudentForm: React.FC = () => {
               {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth}</p>}
             </div>
 
-            <div className="md:col-span-2 lg:col-span-1">
+            <div className="sm:col-span-2 lg:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Numri i Telefonit *
               </label>
@@ -266,7 +266,7 @@ const StudentForm: React.FC = () => {
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
             </div>
 
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Adresa *
               </label>
@@ -304,7 +304,7 @@ const StudentForm: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Arsimore</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Shkolla e Mëparshme
@@ -371,14 +371,15 @@ const StudentForm: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Financiare</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shuma Totale (ALL) *
+                Shuma Totale (€) *
               </label>
               <input
                 type="number"
                 min="0"
+                step="0.01"
                 value={formData.totalAmount}
                 onChange={(e) => handleInputChange('totalAmount', Number(e.target.value))}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -391,11 +392,12 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shuma e Paguar (ALL) *
+                Shuma e Paguar (€) *
               </label>
               <input
                 type="number"
                 min="0"
+                step="0.01"
                 max={formData.totalAmount}
                 value={formData.paidAmount}
                 onChange={(e) => handleInputChange('paidAmount', Number(e.target.value))}
@@ -415,11 +417,11 @@ const StudentForm: React.FC = () => {
                 <span className="text-sm font-medium text-gray-900">Llogaritje Automatike</span>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Borxhi i mbetur:</span>
                   <span className="ml-2 font-medium text-red-600">
-                    {calculateDebt().toLocaleString()} ALL
+                    €{calculateDebt().toLocaleString()}
                   </span>
                 </div>
                 <div>

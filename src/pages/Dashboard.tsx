@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Të Ardhura</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.totalRevenue.toLocaleString()} ALL</p>
+              <p className="text-2xl font-semibold text-gray-900">€{(stats.totalRevenue / 100).toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -194,15 +194,15 @@ const Dashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <p className="text-sm text-gray-500">Të Ardhura Totale</p>
-              <p className="text-2xl font-semibold text-green-600">{stats.totalRevenue.toLocaleString()} ALL</p>
+              <p className="text-2xl font-semibold text-green-600">€{(stats.totalRevenue / 100).toLocaleString()}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Borxhe të Mbetura</p>
-              <p className="text-2xl font-semibold text-orange-600">{stats.totalOutstanding.toLocaleString()} ALL</p>
+              <p className="text-2xl font-semibold text-orange-600">€{(stats.totalOutstanding / 100).toLocaleString()}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Totali i Pritshëm</p>
-              <p className="text-2xl font-semibold text-blue-600">{(stats.totalRevenue + stats.totalOutstanding).toLocaleString()} ALL</p>
+              <p className="text-2xl font-semibold text-blue-600">€{((stats.totalRevenue + stats.totalOutstanding) / 100).toLocaleString()}</p>
             </div>
           </div>
         </div>

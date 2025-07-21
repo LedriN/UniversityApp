@@ -32,8 +32,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Tiranë',
     program: 'Shkenca Kompjuterike',
     academicYear: '2024-2025',
-    totalAmount: 300000,
-    paidAmount: 300000,
+    totalAmount: 3000,
+    paidAmount: 3000,
     createdAt: '2024-01-15T10:00:00.000Z',
     updatedAt: '2024-01-15T10:00:00.000Z'
   },
@@ -51,8 +51,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Tiranë',
     program: 'Mjekësi',
     academicYear: '2024-2025',
-    totalAmount: 450000,
-    paidAmount: 200000,
+    totalAmount: 4500,
+    paidAmount: 2000,
     createdAt: '2024-01-16T11:00:00.000Z',
     updatedAt: '2024-01-16T11:00:00.000Z'
   },
@@ -70,8 +70,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Vlorë',
     program: 'Inxhinieri Civile',
     academicYear: '2024-2025',
-    totalAmount: 280000,
-    paidAmount: 140000,
+    totalAmount: 2800,
+    paidAmount: 1400,
     createdAt: '2024-01-17T12:00:00.000Z',
     updatedAt: '2024-01-17T12:00:00.000Z'
   },
@@ -89,7 +89,7 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Shkodër',
     program: 'Psikologji',
     academicYear: '2024-2025',
-    totalAmount: 250000,
+    totalAmount: 2500,
     paidAmount: 0,
     createdAt: '2024-01-18T13:00:00.000Z',
     updatedAt: '2024-01-18T13:00:00.000Z'
@@ -108,8 +108,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Durrës',
     program: 'Ekonomiks',
     academicYear: '2024-2025',
-    totalAmount: 220000,
-    paidAmount: 220000,
+    totalAmount: 2200,
+    paidAmount: 2200,
     createdAt: '2024-01-19T14:00:00.000Z',
     updatedAt: '2024-01-19T14:00:00.000Z'
   },
@@ -127,8 +127,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Korçë',
     program: 'Drejtësi',
     academicYear: '2024-2025',
-    totalAmount: 200000,
-    paidAmount: 100000,
+    totalAmount: 2000,
+    paidAmount: 1000,
     createdAt: '2024-01-20T15:00:00.000Z',
     updatedAt: '2024-01-20T15:00:00.000Z'
   },
@@ -146,8 +146,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Elbasan',
     program: 'Biznes dhe Menaxhim',
     academicYear: '2024-2025',
-    totalAmount: 240000,
-    paidAmount: 80000,
+    totalAmount: 2400,
+    paidAmount: 800,
     createdAt: '2024-01-21T16:00:00.000Z',
     updatedAt: '2024-01-21T16:00:00.000Z'
   },
@@ -165,8 +165,8 @@ export const mockStudents: Student[] = [
     previousSchoolAddress: 'Fier',
     program: 'Arkitekturë',
     academicYear: '2024-2025',
-    totalAmount: 320000,
-    paidAmount: 160000,
+    totalAmount: 3200,
+    paidAmount: 1600,
     createdAt: '2024-01-22T17:00:00.000Z',
     updatedAt: '2024-01-22T17:00:00.000Z'
   }

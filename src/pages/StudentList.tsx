@@ -137,7 +137,7 @@ const StudentList: React.FC = () => {
 
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Gjinia</label>
                 <select
@@ -282,7 +282,7 @@ const StudentList: React.FC = () => {
                         {paymentStatus.label}
                       </span>
                       <div className="text-xs text-gray-500 mt-1">
-                        {student.paidAmount.toLocaleString()}/{student.totalAmount.toLocaleString()} ALL
+                        €{(student.paidAmount / 100).toLocaleString()}/€{(student.totalAmount / 100).toLocaleString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

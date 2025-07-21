@@ -105,9 +105,9 @@ const StudentDetail: React.FC = () => {
     yPos += 15;
     
     pdf.setFontSize(12);
-    addLine('Shuma totale', `${student.totalAmount.toLocaleString()} ALL`);
-    addLine('Shuma e paguar', `${student.paidAmount.toLocaleString()} ALL`);
-    addLine('Borxhi i mbetur', `${(student.totalAmount - student.paidAmount).toLocaleString()} ALL`);
+    addLine('Shuma totale', `€${(student.totalAmount / 100).toLocaleString()}`);
+    addLine('Shuma e paguar', `€${(student.paidAmount / 100).toLocaleString()}`);
+    addLine('Borxhi i mbetur', `€${((student.totalAmount - student.paidAmount) / 100).toLocaleString()}`);
     addLine('Statusi i pageses', getPaymentStatus().label);
     
     // Footer
@@ -252,7 +252,7 @@ const StudentDetail: React.FC = () => {
                 <p className="mt-1 text-sm text-gray-900">{student.academicYear}</p>
               </div>
               
-              <div className="md:col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-500">Shkolla e Mëparshme</label>
                 <p className="mt-1 text-sm text-gray-900">{student.previousSchool}</p>
                 {student.previousSchoolAddress && (
@@ -264,7 +264,7 @@ const StudentDetail: React.FC = () => {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Student Avatar */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
             <div className="mx-auto h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
@@ -294,21 +294,21 @@ const StudentDetail: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Shuma Totale:</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {student.totalAmount.toLocaleString()} ALL
+                  €{(student.totalAmount / 100).toLocaleString()}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">E Paguar:</span>
                 <span className="text-sm font-medium text-green-600">
-                  {student.paidAmount.toLocaleString()} ALL
+                  €{(student.paidAmount / 100).toLocaleString()}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">E Mbetur:</span>
                 <span className="text-sm font-medium text-red-600">
-                  {(student.totalAmount - student.paidAmount).toLocaleString()} ALL
+                  €{((student.totalAmount - student.paidAmount) / 100).toLocaleString()}
                 </span>
               </div>
               
