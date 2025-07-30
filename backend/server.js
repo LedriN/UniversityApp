@@ -49,7 +49,10 @@ app.use('*', (req, res) => {
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/university', {
+console.log('🔍 MongoDB URI being used:');
+console.log(process.env.MONGODB_URI);
+
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

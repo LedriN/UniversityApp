@@ -3,7 +3,7 @@ import { apiConfig, endpoints } from '../config/api';
 import { Student, User, StudentFilters } from '../types';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3001/api', // or your backend URL
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
 });
 
 api.interceptors.request.use((config) => {

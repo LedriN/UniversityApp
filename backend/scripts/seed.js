@@ -1,14 +1,20 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const User = require('../models/User');
 const Student = require('../models/Student');
 
 const seedData = async () => {
   try {
+    // Debug environment variables
+    console.log('🔍 Environment check:');
+    console.log('MONGODB_URI:', process.env.MONGODB_URI ? '✅ Set' : '❌ Not set');
+    console.log('Current directory:', __dirname);
+    
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/university', {
+    await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
