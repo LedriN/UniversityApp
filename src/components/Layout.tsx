@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Users, Plus, Settings, LogOut, GraduationCap, Home, Wifi, WifiOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import logo from '../../dist/assets/logo.svg';
+import logo from '../../public/assets/logo.svg';
 
 interface LayoutProps {
   children: React.ReactNode;
