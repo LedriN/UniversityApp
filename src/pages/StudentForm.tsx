@@ -152,9 +152,12 @@ const StudentForm: React.FC = () => {
               <div><strong>🆔 Student ID:</strong> {formData.studentID}</div>
               <div><strong>👤 Username:</strong> {username}</div>
               <div><strong>📧 Email:</strong> {formData.email}</div>
-              <div className="text-blue-600 font-medium">
-                Fjalëkalimi u dërgua në email-in e studentit.
-              </div>
+                             <div className="text-green-600 font-medium">
+                 ✅ Fjalëkalimi u gjenerua dhe u dërgua në email-in e studentit.
+               </div>
+               <div className="text-orange-600 text-sm">
+                 💡 Kontrolloni email-in e studentit për kredencialet e hyrjes.
+               </div>
             </div>
           ),
           duration: 6000
