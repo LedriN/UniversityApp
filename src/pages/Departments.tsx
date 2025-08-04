@@ -1,28 +1,23 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, GraduationCap, ArrowLeft, Search } from 'lucide-react';
+import { Users, GraduationCap, ArrowLeft, Search, FileText } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Student } from '../types';
+import LectureList from '../components/LectureList';
 
 const Departments: React.FC = () => {
-  const { students } = useApp();
+  const { students, currentUser } = useApp();
   const navigate = useNavigate();
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'students' | 'lectures'>('students');
 
   // Define all available programs
   const allPrograms = [
     'Shkenca Kompjuterike',
     'Ekonomi e Përgjithshme',
     'Juridik i Përgjithshëm',
-    'Përkujdesje dhe Mirëqenie Sociale',
-    'Inxhinieri Civile',
-    'Ekonomiks',
-    'Drejtësi',
-    'Mjekësi',
-    'Psikologji',
-    'Biznes dhe Menaxhim',
-    'Arkitekturë'
+    'Përkujdesje dhe Mirëqenie Sociale'
   ];
 
   // Group students by program
@@ -99,27 +94,64 @@ const Departments: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{selectedProgram}</h1>
             <p className="text-gray-600">
-              {filteredStudents.length} studentë në këtë program
+              {activeTab === 'students' ? `${filteredStudents.length} studentë` : 'Leksionet'} në këtë program
             </p>
           </div>
         </div>
 
-        {/* Search */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Kërko studentët..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('students')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'students'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Users size={20} />
+                  Studentët ({filteredStudents.length})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('lectures')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'lectures'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText size={20} />
+                  Leksionet
+                </div>
+              </button>
+            </nav>
           </div>
         </div>
 
-        {/* Students List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {/* Content based on active tab */}
+        {activeTab === 'students' ? (
+          <>
+            {/* Search */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Kërko studentët..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Students List */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -214,7 +246,14 @@ const Departments: React.FC = () => {
               </p>
             </div>
           )}
-        </div>
+            </div>
+          </>
+        ) : (
+          <LectureList 
+            program={selectedProgram} 
+            userRole={currentUser?.role || 'student'} 
+          />
+        )}
       </div>
     );
   }
@@ -224,7 +263,29 @@ const Departments: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Departamentet</h1>
       </div>
-
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Përmbledhje e Departamenteve</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">
+              {allPrograms.length}
+            </div>
+            <div className="text-sm text-gray-500">Departamente</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {students.length}
+            </div>
+            <div className="text-sm text-gray-500">Totali Studentë</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">
+              {students.filter(s => s.paidAmount >= s.totalAmount).length}
+            </div>
+            <div className="text-sm text-gray-500">Studentë të Paguar</div>
+          </div>
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {allPrograms.map((program) => {
           const stats = programStats[program];
@@ -269,31 +330,6 @@ const Departments: React.FC = () => {
             </div>
           );
         })}
-      </div>
-
-      {/* Summary */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Përmbledhje e Departamenteve</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {allPrograms.length}
-            </div>
-            <div className="text-sm text-gray-500">Departamente</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {students.length}
-            </div>
-            <div className="text-sm text-gray-500">Totali Studentë</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {students.filter(s => s.paidAmount >= s.totalAmount).length}
-            </div>
-            <div className="text-sm text-gray-500">Studentë të Paguar</div>
-          </div>
-        </div>
       </div>
     </div>
   );

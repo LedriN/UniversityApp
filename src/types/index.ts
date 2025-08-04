@@ -37,3 +37,22 @@ export interface StudentFilters {
   isOnline?: boolean;
   usesMockData?: boolean;
 }
+
+export interface Lecture {
+  id: string;
+  title: string;
+  description?: string;
+  program: string;
+  fileName: string;
+  originalFileName: string;
+  filePath: string;
+  fileSize: number;
+  uploadedBy: {
+    id: string;
+    username: string;
+    email: string;
+  };
+  uploadedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}

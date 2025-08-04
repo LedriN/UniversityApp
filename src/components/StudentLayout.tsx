@@ -1,0 +1,55 @@
+import React, { useState } from 'react';
+import { ChevronRight, Clock } from 'lucide-react';
+import StudentSidebar from './StudentSidebar';
+
+interface StudentLayoutProps {
+  children: React.ReactNode;
+  title: string;
+  subtitle?: string;
+}
+
+const StudentLayout: React.FC<StudentLayoutProps> = ({ children, title, subtitle }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <StudentSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Bar */}
+        <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ChevronRight className={`h-5 w-5 text-gray-600 transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                {subtitle && <p className="text-gray-600">{subtitle}</p>}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Clock className="h-4 w-4" />
+                <span>{new Date().toLocaleDateString('sq-AL')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StudentLayout; 

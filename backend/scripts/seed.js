@@ -85,7 +85,7 @@ const seedData = async () => {
         email: 'elsa.kola@student.edu.al',
         previousSchool: 'Gjimnazi "Naim Frashëri"',
         previousSchoolAddress: 'Tiranë',
-        program: 'Mjekësi',
+        program: 'Ekonomi e Përgjithshme',
         academicYear: '2024-2025',
         totalAmount: 450000,
         paidAmount: 200000
@@ -102,7 +102,7 @@ const seedData = async () => {
         email: 'marko.gjoka@student.edu.al',
         previousSchool: 'Gjimnazi "Ismail Qemali"',
         previousSchoolAddress: 'Vlorë',
-        program: 'Inxhinieri Civile',
+        program: 'Juridik i Përgjithshëm',
         academicYear: '2024-2025',
         totalAmount: 280000,
         paidAmount: 140000
@@ -119,7 +119,7 @@ const seedData = async () => {
         email: 'sara.mema@student.edu.al',
         previousSchool: 'Gjimnazi "Luigj Gurakuqi"',
         previousSchoolAddress: 'Shkodër',
-        program: 'Psikologji',
+        program: 'Përkujdesje dhe Mirëqenie Sociale',
         academicYear: '2024-2025',
         totalAmount: 250000,
         paidAmount: 0
@@ -136,7 +136,7 @@ const seedData = async () => {
         email: 'denis.rama@student.edu.al',
         previousSchool: 'Gjimnazi "Aleksandër Moisiu"',
         previousSchoolAddress: 'Durrës',
-        program: 'Ekonomiks',
+        program: 'Shkenca Kompjuterike',
         academicYear: '2024-2025',
         totalAmount: 220000,
         paidAmount: 220000
@@ -153,7 +153,7 @@ const seedData = async () => {
         email: 'anxhela.basha@student.edu.al',
         previousSchool: 'Gjimnazi "Raqi Qirinxhi"',
         previousSchoolAddress: 'Korçë',
-        program: 'Drejtësi',
+        program: 'Ekonomi e Përgjithshme',
         academicYear: '2024-2025',
         totalAmount: 200000,
         paidAmount: 100000
@@ -170,7 +170,7 @@ const seedData = async () => {
         email: 'klajdi.zeneli@student.edu.al',
         previousSchool: 'Gjimnazi "Kostandin Kristoforidhi"',
         previousSchoolAddress: 'Elbasan',
-        program: 'Biznes dhe Menaxhim',
+        program: 'Juridik i Përgjithshëm',
         academicYear: '2024-2025',
         totalAmount: 240000,
         paidAmount: 80000
@@ -187,7 +187,7 @@ const seedData = async () => {
         email: 'erjona.duka@student.edu.al',
         previousSchool: 'Gjimnazi "Jani Vreto"',
         previousSchoolAddress: 'Fier',
-        program: 'Arkitekturë',
+        program: 'Përkujdesje dhe Mirëqenie Sociale',
         academicYear: '2024-2025',
         totalAmount: 320000,
         paidAmount: 160000

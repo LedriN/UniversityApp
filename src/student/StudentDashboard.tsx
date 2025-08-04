@@ -1,39 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Home, 
-  GraduationCap, 
   CreditCard, 
-  Settings, 
-  LogOut, 
-  User,
   Calendar,
   BookOpen,
   DollarSign,
-  FileText,
   Bell
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { Student } from '../types';
+import StudentLayout from '../components/StudentLayout';
 
 interface StudentDashboardProps {
   children?: React.ReactNode;
 }
 
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ children }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { currentUser, logout } = useApp();
+  const { currentUser } = useApp();
   const [studentData, setStudentData] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Navigation items for student
-  const navigation = [
-    { name: 'Dashboard', href: '/student', icon: Home },
-    { name: 'Departamenti & Pagesat', href: '/student/department', icon: GraduationCap },
-    { name: 'Cilësimet', href: '/student/settings', icon: Settings },
-  ];
 
   useEffect(() => {
     const loadStudentData = async () => {
@@ -56,184 +41,34 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ children }) => {
     loadStudentData();
   }, [currentUser]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const calculateDebt = () => {
-    if (!studentData) return 0;
-    return Math.max(0, studentData.totalAmount - studentData.paidAmount);
-  };
-
-  const calculateProgress = () => {
-    if (!studentData || studentData.totalAmount === 0) return 0;
-    return Math.min(100, (studentData.paidAmount / studentData.totalAmount) * 100);
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Duke ngarkuar të dhënat...</span>
-      </div>
+      <StudentLayout title="Dashboard">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600">Duke ngarkuar të dhënat...</span>
+        </div>
+      </StudentLayout>
     );
   }
 
   if (!studentData) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Nuk u gjetën të dhëna</h2>
-          <p className="text-gray-600">Të dhënat e studentit nuk u gjetën në sistem.</p>
+      <StudentLayout title="Dashboard">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Nuk u gjetën të dhëna</h2>
+            <p className="text-gray-600">Të dhënat e studentit nuk u gjetën në sistem.</p>
+          </div>
         </div>
-      </div>
+      </StudentLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="hidden lg:flex lg:flex-shrink-0">
-        <div className="flex flex-col w-64 bg-white shadow-lg">
-          {/* Header */}
-          <div className="flex p-6 items-center justify-center border-b border-gray-200">
-            <div className="flex items-center space-x-3">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">Portali i Studentit</h1>
-                <p className="text-xs text-gray-500">Universiteti Privat</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Student Info */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
-              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <User className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {studentData.firstName} {studentData.lastName}
-                </p>
-                <p className="text-xs text-gray-500 truncate">{studentData.email}</p>
-                <p className="text-xs text-blue-600 font-medium">Student</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Navigation */}
-          <nav className="mt-6 px-4 flex-1">
-            <ul className="space-y-2">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href;
-                
-                return (
-                  <li key={item.name}>
-                    <Link
-                      to={item.href}
-                      className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                      }`}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* Logout */}
-          <div className="p-4 border-t border-gray-200">
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Dil</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Header */}
-        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <GraduationCap className="h-6 w-6 text-blue-600" />
-              <span className="text-lg font-bold text-gray-900">Portali i Studentit</span>
-            </div>
-            <button
-              onClick={() => {
-                const sidebar = document.getElementById('mobile-sidebar');
-                sidebar?.classList.toggle('-translate-x-full');
-              }}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto py-6 px-4 sm:py-8 sm:px-6 lg:py-10 lg:px-8">
-          {children || <StudentDashboardContent student={studentData} />}
-        </main>
-      </div>
-
-      {/* Mobile Sidebar */}
-      <div className="lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out" id="mobile-sidebar">
-        <div className="flex h-16 items-center justify-center border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <GraduationCap className="h-8 w-8 text-blue-600" />
-            <span className="text-lg font-bold text-gray-900">Portali i Studentit</span>
-          </div>
-        </div>
-        
-        <nav className="mt-6 px-4">
-          <ul className="space-y-2">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              
-              return (
-                <li key={item.name}>
-                  <Link
-                    to={item.href}
-                    className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-            <span>Dil</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <StudentLayout title="Dashboard" subtitle={`Mirë se vini, ${studentData.firstName}!`}>
+      {children || <StudentDashboardContent student={studentData} />}
+    </StudentLayout>
   );
 };
 
@@ -260,10 +95,6 @@ const StudentDashboardContent: React.FC<{ student: Student }> = ({ student }) =>
             <p className="mt-2 text-gray-600">
               Këtu mund të shihni të gjitha informacionet tuaja si student
             </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Bell className="h-6 w-6 text-gray-400" />
-            <span className="text-sm text-gray-500">Nuk ka njoftime të reja</span>
           </div>
         </div>
       </div>

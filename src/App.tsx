@@ -12,6 +12,7 @@ import Settings from './pages/Settings';
 import Departments from './pages/Departments';
 import StudentDashboard from './student/StudentDashboard';
 import DepartmentPage from './student/DepartmentPage';
+import StudentDepartmentPage from './student/StudentDepartmentPage';
 import StudentSettings from './student/StudentSettings';
 
 function App() {
@@ -87,7 +88,7 @@ function App() {
           } />
           <Route path="/student/department" element={
             <ProtectedRoute>
-              <DepartmentPage />
+              <StudentDepartmentPage />
             </ProtectedRoute>
           } />
           <Route path="/student/settings" element={

@@ -76,13 +76,9 @@ const studentSchema = new mongoose.Schema({
     required: [true, 'Program is required'],
     enum: [
       'Shkenca Kompjuterike',
-      'Inxhinieri Civile',
-      'Ekonomiks',
-      'Drejtësi',
-      'Mjekësi',
-      'Psikologji',
-      'Biznes dhe Menaxhim',
-      'Arkitekturë'
+      'Ekonomi e Përgjithshme',
+      'Juridik i Përgjithshëm',
+      'Përkujdesje dhe Mirëqenie Sociale'
     ]
   },
   academicYear: {

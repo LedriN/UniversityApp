@@ -24,4 +24,10 @@ export const endpoints = {
   
   // Statistics endpoints
   stats: '/stats',
+  
+  // Lecture endpoints
+  lecturesByProgram: (program: string) => `/lectures/program/${encodeURIComponent(program)}`,
+  uploadLecture: '/lectures/upload',
+  downloadLecture: (id: string) => `/lectures/download/${id}`,
+  deleteLecture: (id: string) => `/lectures/${id}`,
 };

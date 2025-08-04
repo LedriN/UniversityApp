@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { apiConfig, endpoints } from '../config/api';
-import { Student, User, StudentFilters } from '../types';
+import { Student, User, StudentFilters, Lecture } from '../types';
 
 class ApiService {
   private api: AxiosInstance;
@@ -106,6 +106,32 @@ class ApiService {
   }> {
     const response = await this.api.get(endpoints.stats);
     return response.data;
+  }
+
+  // Lecture methods
+  async getLecturesByProgram(program: string): Promise<Lecture[]> {
+    const response = await this.api.get(endpoints.lecturesByProgram(program));
+    return response.data;
+  }
+
+  async uploadLecture(formData: FormData): Promise<{ message: string; lecture: Lecture }> {
+    const response = await this.api.post(endpoints.uploadLecture, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async downloadLecture(id: string): Promise<Blob> {
+    const response = await this.api.get(endpoints.downloadLecture(id), {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async deleteLecture(id: string): Promise<void> {
+    await this.api.delete(endpoints.deleteLecture(id));
   }
 }
 

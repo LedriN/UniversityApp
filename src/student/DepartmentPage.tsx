@@ -15,7 +15,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { Student } from '../types';
-import StudentDashboard from './StudentDashboard';
+import StudentLayout from '../components/StudentLayout';
 
 const DepartmentPage: React.FC = () => {
   const { currentUser } = useApp();
@@ -54,28 +54,28 @@ const DepartmentPage: React.FC = () => {
 
   if (loading) {
     return (
-      <StudentDashboard>
+      <StudentLayout title="Departamenti & Pagesat">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <span className="ml-2 text-gray-600">Duke ngarkuar të dhënat...</span>
         </div>
-      </StudentDashboard>
+      </StudentLayout>
     );
   }
 
   if (!studentData) {
     return (
-      <StudentDashboard>
+      <StudentLayout title="Departamenti & Pagesat">
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Nuk u gjetën të dhëna</h2>
           <p className="text-gray-600">Të dhënat e studentit nuk u gjetën në sistem.</p>
         </div>
-      </StudentDashboard>
+      </StudentLayout>
     );
   }
 
   return (
-    <StudentDashboard>
+    <StudentLayout title="Departamenti & Pagesat" subtitle="Informacione për departamentin dhe statusin e pagesave">
       <div className="space-y-8">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -308,9 +308,9 @@ const DepartmentPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </StudentDashboard>
-  );
-};
+              </div>
+      </StudentLayout>
+    );
+  };
 
 export default DepartmentPage; 
