@@ -1,13 +1,31 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Eye, Edit, Trash2, Plus, Download } from 'lucide-react';
+import { useToast } from '../components/ToastContainer';
+import DeleteModal from '../components/DeleteModal';
 import { useApp } from '../context/AppContext';
 import { Student } from '../types';
 
 const StudentList: React.FC = () => {
   const { students, filters, setFilters, deleteStudent } = useApp();
+  const { showToast } = useToast();
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    student: Student | null;
+  }>({
+    isOpen: false,
+    student: null
+  });
+
+  // Debug: Log first student to check email field
+  React.useEffect(() => {
+    if (students.length > 0) {
+      console.log('First student data:', students[0]);
+      console.log('Email field:', students[0].email);
+    }
+  }, [students]);
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
@@ -74,15 +92,41 @@ const StudentList: React.FC = () => {
 
   const programs = Array.from(new Set(students.map(s => s.program)));
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Jeni i sigurt që dëshironi të fshini këtë student?')) {
-      setLoading(true);
-      try {
-        await deleteStudent(id);
-      } finally {
-        setLoading(false);
-      }
+  const handleDeleteClick = (student: Student) => {
+    setDeleteModal({
+      isOpen: true,
+      student
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.student) return;
+
+    setLoading(true);
+    try {
+      await deleteStudent(deleteModal.student.id);
+      showToast({
+        type: 'success',
+        title: 'Sukses!',
+        message: 'Studenti u fshi me sukses!',
+        duration: 4000
+      });
+      setDeleteModal({ isOpen: false, student: null });
+    } catch (error) {
+      console.error('Error deleting student:', error);
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Gabim gjatë fshirjes së studentit. Ju lutemi provoni përsëri.',
+        duration: 5000
+      });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, student: null });
   };
 
   const getPaymentStatus = (student: Student) => {
@@ -261,10 +305,12 @@ const StudentList: React.FC = () => {
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 capitalize">
                             {student.firstName} {student.lastName}
                           </div>
-                          <div className="text-sm text-gray-500">{student.email}</div>
+                          <div className="text-sm text-gray-500">
+                            {student.email || 'Email nuk disponohet'}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -309,7 +355,7 @@ const StudentList: React.FC = () => {
                           <Edit className="h-4 w-4" />
                         </Link>
                         <button
-                          onClick={() => handleDelete(student.id)}
+                          onClick={() => handleDeleteClick(student)}
                           className="text-red-600 hover:text-red-900 transition-colors"
                           title="Fshi"
                         >
@@ -333,6 +379,17 @@ const StudentList: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Fshi Studentin"
+        message="Jeni i sigurt që dëshironi të fshini këtë student? Të gjitha të dhënat e lidhura me këtë student do të fshihen përgjithmonë."
+        itemName={deleteModal.student ? `${deleteModal.student.firstName} ${deleteModal.student.lastName}` : undefined}
+        loading={loading}
+      />
     </div>
   );
 };

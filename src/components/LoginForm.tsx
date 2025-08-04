@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
+import logo from '../../public/assets/logo.svg';
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -37,18 +38,9 @@ const LoginForm: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="flex justify-center">
-            <GraduationCap className="h-16 w-16 text-blue-600" />
-          </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Sistemi i Menaxhimit të Studentëve
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Identifikohuni për të vazhduar
-          </p>
+        <div className="flex p-5 items-center justify-center relative">
+              <img src={logo} alt="Logo" className="h-[125px] w-[125px]" />
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="bg-white p-8 rounded-xl shadow-lg space-y-6">
             {error && (

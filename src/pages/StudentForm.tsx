@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Calculator } from 'lucide-react';
+import { useToast } from '../components/ToastContainer';
 import { apiService } from '../services/api';
 import { useAsyncOperation } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
@@ -10,6 +11,7 @@ const StudentForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { addStudent, updateStudent } = useApp();
+  const { showToast } = useToast();
   const isEditing = Boolean(id);
   const { loading: apiLoading, execute } = useAsyncOperation();
 
@@ -130,18 +132,47 @@ const StudentForm: React.FC = () => {
       setLoading(true);
       if (isEditing && id) {
         await updateStudent(id, formData);
+        showToast({
+          type: 'success',
+          title: 'Sukses!',
+          message: 'Studenti u përditësua me sukses!',
+          duration: 4000
+        });
         navigate('/students');
       } else {
         await addStudent(formData);
         
-        // Show success message with login credentials for new students
+        // Show success toast with login credentials for new students
         const username = `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`;
-        alert(`✅ Student created successfully!\n\n🆔 Student ID: ${formData.studentID}\n🔐 Login credentials created:\nUsername: ${username}\nPassword: user123\n\nThe student can now login to their dashboard.`);
+        showToast({
+          type: 'success',
+          title: 'Studenti u shtua me sukses!',
+          message: (
+            <div className="space-y-1">
+              <div><strong>🆔 Student ID:</strong> {formData.studentID}</div>
+              <div><strong>👤 Username:</strong> {username}</div>
+              <div><strong>📧 Email:</strong> {formData.email}</div>
+              <div className="text-blue-600 font-medium">
+                Fjalëkalimi u dërgua në email-in e studentit.
+              </div>
+            </div>
+          ),
+          duration: 6000
+        });
         
-        navigate('/students');
+        // Delay navigation to allow toast to be seen
+        setTimeout(() => {
+          navigate('/students');
+        }, 2000);
       }
     } catch (error) {
       console.error('Error saving student:', error);
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Gabim gjatë ruajtjes së studentit. Ju lutemi provoni përsëri.',
+        duration: 5000
+      });
     } finally {
       setLoading(false);
     }
@@ -200,13 +231,7 @@ const StudentForm: React.FC = () => {
                  Automatike: Krijimi i llogarisë së përdoruesit
                </h3>
                <div className="mt-2 text-sm text-blue-700">
-                 <p>Kur krijoni një student të ri, do të krijohet automatikisht një llogari përdoruesi me:</p>
-                 <ul className="list-disc list-inside mt-1 space-y-1">
-                   <li><strong>Student ID:</strong> {formData.studentID} (10 shifra)</li>
-                   <li><strong>Username:</strong> emri.mbiemri (p.sh. andi.hoxha)</li>
-                   <li><strong>Password:</strong> user123</li>
-                   <li>Studentët mund të identifikohen në sistemin e tyre</li>
-                 </ul>
+                 <p>Kur krijoni një student të ri, do të krijohet automatikisht një llogari përdoruesi dhe fjalëkalimi do të dërgohet në email-in e studentit.</p>
                </div>
              </div>
            </div>

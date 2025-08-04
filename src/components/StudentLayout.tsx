@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronRight, Clock } from 'lucide-react';
+import React from 'react';
+import { Clock } from 'lucide-react';
 import StudentSidebar from './StudentSidebar';
 
 interface StudentLayoutProps {
@@ -9,12 +9,10 @@ interface StudentLayoutProps {
 }
 
 const StudentLayout: React.FC<StudentLayoutProps> = ({ children, title, subtitle }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <StudentSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <StudentSidebar sidebarOpen={true} setSidebarOpen={() => {}} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -22,12 +20,6 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children, title, subtitle
         <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ChevronRight className={`h-5 w-5 text-gray-600 transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} />
-              </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
                 {subtitle && <p className="text-gray-600">{subtitle}</p>}
