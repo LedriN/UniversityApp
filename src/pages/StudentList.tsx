@@ -335,7 +335,7 @@ const StudentList: React.FC = () => {
                         {paymentStatus.label}
                       </span>
                       <div className="text-xs text-gray-500 mt-1">
-                        €{(student.paidAmount / 100).toLocaleString()}/€{(student.totalAmount / 100).toLocaleString()}
+                        €{student.paidAmount.toFixed(2)} / €{student.totalAmount.toFixed(2)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
