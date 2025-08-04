@@ -158,7 +158,6 @@ const StudentSettings: React.FC = () => {
 
   const tabs = [
     { id: 'profile', name: 'Profili', icon: User },
-    { id: 'security', name: 'Siguria', icon: Lock },
   ];
 
   return (
@@ -170,7 +169,6 @@ const StudentSettings: React.FC = () => {
             <Settings className="h-8 w-8 text-blue-600" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Cilësimet</h1>
-              <p className="text-gray-600">Menaxho profilin dhe cilësimet tuaja</p>
             </div>
           </div>
         </div>
@@ -229,6 +227,7 @@ const StudentSettings: React.FC = () => {
                       Emri
                     </label>
                     <input
+                    disabled={true}
                       type="text"
                       value={profileForm.firstName}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, firstName: e.target.value }))}
@@ -241,6 +240,7 @@ const StudentSettings: React.FC = () => {
                     </label>
                     <input
                       type="text"
+                      disabled={true}
                       value={profileForm.lastName}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, lastName: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -251,6 +251,7 @@ const StudentSettings: React.FC = () => {
                       Email
                     </label>
                     <input
+                    disabled={true}
                       type="email"
                       value={profileForm.email}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
@@ -262,6 +263,7 @@ const StudentSettings: React.FC = () => {
                       Telefon
                     </label>
                     <input
+                      disabled={true}
                       type="tel"
                       value={profileForm.phone}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
@@ -273,118 +275,13 @@ const StudentSettings: React.FC = () => {
                       Adresa
                     </label>
                     <input
+                      disabled={true}
                       type="text"
                       value={profileForm.address}
                       onChange={(e) => setProfileForm(prev => ({ ...prev, address: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {saving ? 'Duke ruajtur...' : 'Ruaj Ndryshimet'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Security Tab */}
-            {activeTab === 'security' && (
-              <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900">Ndrysho Fjalëkalimin</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Fjalëkalimi Aktual
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-5 w-5 text-gray-400" />
-                        ) : (
-                          <Eye className="h-5 w-5 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Fjalëkalimi i Ri
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showNewPassword ? 'text' : 'password'}
-                        value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-5 w-5 text-gray-400" />
-                        ) : (
-                          <Eye className="h-5 w-5 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Konfirmo Fjalëkalimin e Ri
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-5 w-5 text-gray-400" />
-                        ) : (
-                          <Eye className="h-5 w-5 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {saving ? 'Duke ndryshuar...' : 'Ndrysho Fjalëkalimin'}
-                  </button>
                 </div>
               </form>
             )}
