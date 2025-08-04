@@ -11,7 +11,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, isOnline, usesMockData } = useApp();
+  const { currentUser, logout } = useApp();
 
   const handleLogout = () => {
     logout();
@@ -19,10 +19,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: Home },
-    { name: 'Studentët', href: '/students', icon: Users },
-    { name: 'Shto Student', href: '/students/add', icon: Plus },
-    { name: 'Cilësimet', href: '/settings', icon: Settings },
+    { name: 'Dashboard', href: '/admin', icon: Home },
+    { name: 'Studentët', href: '/admin/students', icon: Users },
+    { name: 'Departamentet', href: '/admin/departments', icon: GraduationCap },
+    { name: 'Shto Student', href: '/admin/students/add', icon: Plus },
+    { name: 'Cilësimet', href: '/admin/settings', icon: Settings },
   ];
 
   return (
@@ -61,14 +62,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <div className="p-4 border-t border-gray-200">
             {/* Demo Mode Warning */}
-            {usesMockData && (
+            {/* usesMockData && (
               <div className="mb-3 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800">
                 <div className="flex items-center">
                   <WifiOff className="h-3 w-3 mr-1" />
                   Demo Mode - Data won't persist
                 </div>
               </div>
-            )}
+            ) */}
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -99,11 +100,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex h-16 items-center justify-center border-b border-gray-200">
           {/* Connection Status */}
           <div className="absolute top-4 right-4">
-            {isOnline ? (
-              <Wifi className="h-4 w-4 text-green-500" title="Online - Connected to backend" />
+            {/* isOnline ? (
+              <Wifi className="h-4 w-4 text-green-500" />
             ) : (
-              <WifiOff className="h-4 w-4 text-orange-500" title="Offline - Using demo data" />
-            )}
+              <WifiOff className="h-4 w-4 text-orange-500" />
+            ) */}
           </div>
           
           <div className="flex items-center space-x-2">
@@ -139,14 +140,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           {/* Demo Mode Warning */}
-          {usesMockData && (
+          {/* usesMockData && (
             <div className="mb-3 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800">
               <div className="flex items-center">
                 <WifiOff className="h-3 w-3 mr-1" />
                 Demo Mode - Data won't persist
               </div>
             </div>
-          )}
+          ) */}
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -192,11 +193,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <span className="text-lg font-bold text-gray-900">Universiteti</span>
             </div>
             <div className="flex items-center space-x-2">
-              {isOnline ? (
+              {/* isOnline ? (
                 <Wifi className="h-4 w-4 text-green-500" />
               ) : (
                 <WifiOff className="h-4 w-4 text-orange-500" />
-              )}
+              ) */}
             </div>
           </div>
         </div>

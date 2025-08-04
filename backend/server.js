@@ -11,9 +11,25 @@ const statsRoutes = require('./routes/stats');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// CORS configuration
+const corsOrigins = process.env.NODE_ENV === 'production' 
+  ? [process.env.FRONTEND_URL].filter(Boolean)
+  : [
+      'http://localhost:5173',
+      'http://localhost:5000', 
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5000',
+      'http://127.0.0.1:3000'
+    ];
+
+console.log('🔧 CORS Origins configured:', corsOrigins);
+console.log('🌍 NODE_ENV:', process.env.NODE_ENV);
+console.log('🔗 FRONTEND_URL from env:', process.env.FRONTEND_URL);
+
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: corsOrigins,
   credentials: true
 }));
 app.use(express.json());

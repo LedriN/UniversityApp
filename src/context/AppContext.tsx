@@ -60,17 +60,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const token = localStorage.getItem('authToken');
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser));
-      if (token) {
-        if (isOnline) {
-          // Verify token is still valid and refresh data
-          refreshStudents();
-          refreshUsers();
-        } else {
-          // Use mock data when offline
-          setStudents(mockStudents);
-          setUsers(mockUsers);
+              if (token) {
+          if (isOnline) {
+            // Verify token is still valid and refresh data
+            refreshStudents();
+            // Only refresh users if admin
+            if (JSON.parse(savedUser).role === 'admin') {
+              refreshUsers();
+            }
+          } else {
+            // Use mock data when offline
+            setStudents(mockStudents);
+            setUsers(mockUsers);
+          }
         }
-      }
     }
   }, [isOnline]);
 
@@ -94,6 +97,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUsers(mockUsers);
       return;
     }
+    
+    // Only fetch users if current user is admin
+    if (currentUser?.role !== 'admin') {
+      setUsers([]);
+      return;
+    }
+    
     const result = await execute(() => apiService.getUsers());
     if (result) {
       setUsers(result);
@@ -194,7 +204,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       // Load initial data
       await refreshStudents();
-      await refreshUsers();
+      // Only refresh users if admin
+      if (user.role === 'admin') {
+        await refreshUsers();
+      }
       
       return true;
     }
@@ -221,6 +234,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addUser = async (userData: Omit<User, 'id' | 'createdAt'>) => {
+    // Only allow admin users to add users
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Access denied. Admin privileges required.');
+    }
+    
     if (!isOnline) {
       // Mock implementation for offline mode
       const newUser: User = {

@@ -1,5 +1,6 @@
 export interface Student {
   id: string;
+  studentID: string;
   firstName: string;
   lastName: string;
   parentName: string;
@@ -22,7 +23,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'staff';
+  role: 'admin' | 'staff' | 'student';
   createdAt: string;
 }
 

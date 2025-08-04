@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult, query } = require('express-validator');
 const Student = require('../models/Student');
+const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -35,7 +36,8 @@ router.get('/', [
         { firstName: { $regex: search, $options: 'i' } },
         { lastName: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
-        { program: { $regex: search, $options: 'i' } }
+        { program: { $regex: search, $options: 'i' } },
+        { studentID: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -123,6 +125,8 @@ router.get('/:id', auth, async (req, res) => {
 // @access  Private
 router.post('/', [
   auth,
+  body('studentID').trim().notEmpty().withMessage('Student ID is required')
+    .matches(/^\d{10}$/).withMessage('Student ID must be exactly 10 digits'),
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('parentName').trim().notEmpty().withMessage('Parent name is required'),
@@ -155,6 +159,36 @@ router.post('/', [
     const student = new Student(req.body);
     await student.save();
 
+    // Create user account for the student
+    try {
+      const username = `${req.body.firstName.toLowerCase()}.${req.body.lastName.toLowerCase()}`;
+      const email = req.body.email;
+      
+      // Check if user already exists
+      const existingUser = await User.findOne({ 
+        $or: [{ username }, { email }] 
+      });
+      
+      if (existingUser) {
+        // If user exists, just return the student
+        return res.status(201).json(student);
+      }
+
+      // Create new user account
+      const user = new User({
+        username,
+        email,
+        password: 'user123', // Default password
+        role: 'student'
+      });
+      
+      await user.save();
+      console.log(`✅ Created user account for student: ${username}`);
+    } catch (userError) {
+      console.error('Error creating user account:', userError);
+      // Don't fail the student creation if user creation fails
+    }
+
     res.status(201).json(student);
   } catch (error) {
     if (error.code === 11000) {
@@ -176,6 +210,8 @@ router.post('/', [
 // @access  Private
 router.put('/:id', [
   auth,
+  body('studentID').optional().trim().notEmpty().withMessage('Student ID cannot be empty')
+    .matches(/^\d{10}$/).withMessage('Student ID must be exactly 10 digits'),
   body('firstName').optional().trim().notEmpty().withMessage('First name cannot be empty'),
   body('lastName').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
   body('parentName').optional().trim().notEmpty().withMessage('Parent name cannot be empty'),

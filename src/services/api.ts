@@ -2,21 +2,6 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { apiConfig, endpoints } from '../config/api';
 import { Student, User, StudentFilters } from '../types';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export default api;
-
 class ApiService {
   private api: AxiosInstance;
 

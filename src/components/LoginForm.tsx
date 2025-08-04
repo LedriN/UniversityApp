@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import api from '../services/api';
+import { apiService } from '../services/api';
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -20,16 +20,15 @@ const LoginForm: React.FC = () => {
     setError('');
 
     try {
-      const response = await api.post('/auth/login', { username, password });
-      localStorage.setItem('token', response.data.token); // Store token
       const success = await login(username, password);
       if (success) {
+        // Navigate to root, which will redirect based on user role
         navigate('/');
       } else {
         setError('Emri i përdoruesit ose fjalëkalimi janë të gabuar');
       }
     } catch (error: any) {
-      setError(error.message || 'Ka ndodhur një gabim gjatë identifikimit');
+      setError(error.response?.data?.message || error.message || 'Ka ndodhur një gabim gjatë identifikimit');
     } finally {
       setLoading(false);
     }
@@ -113,8 +112,9 @@ const LoginForm: React.FC = () => {
 
             <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
               <p><strong>Demo përdorues:</strong></p>
-              <p>Emri: admin</p>
-              <p>Fjalëkalimi: admin123</p>
+              <p><strong>Admin:</strong> admin / admin123</p>
+              <p><strong>Staff:</strong> staff / staff123</p>
+              <p><strong>Student:</strong> andi.hoxha / user123</p>
             </div>
           </div>
         </form>

@@ -40,7 +40,7 @@ const StudentDetail: React.FC = () => {
       <div className="text-center py-12">
         <p className="text-lg text-gray-600">Studenti nuk u gjet</p>
         <button
-          onClick={() => navigate('/students')}
+          onClick={() => navigate('/admin/students')}
           className="mt-4 text-blue-600 hover:text-blue-800"
         >
           Kthehu te lista
@@ -125,7 +125,7 @@ const StudentDetail: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate('/students')}
+            onClick={() => navigate('/admin/students')}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -144,7 +144,7 @@ const StudentDetail: React.FC = () => {
             Eksporto PDF
           </button>
           <Link
-            to={`/students/${student.id}/edit`}
+            to={`/admin/students/${student.id}/edit`}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             <Edit className="h-4 w-4 mr-2" />
@@ -336,7 +336,7 @@ const StudentDetail: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-4">Veprime të Shpejta</h3>
             <div className="space-y-3">
               <Link
-                to={`/students/${student.id}/edit`}
+                to={`/admin/students/${student.id}/edit`}
                 className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
                 <Edit className="h-4 w-4 mr-2" />

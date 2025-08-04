@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <Link
-          to="/students/add"
+          to="/admin/students/add"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-900">Studentë të Fundit</h3>
               <Link
-                to="/students"
+                to="/admin/students"
                 className="text-sm text-blue-600 hover:text-blue-800 font-medium"
               >
                 Shiko të gjithë

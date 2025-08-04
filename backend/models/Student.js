@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
+  studentID: {
+    type: String,
+    required: [true, 'Student ID is required'],
+    unique: true,
+    trim: true,
+    match: [/^\d{10}$/, 'Student ID must be exactly 10 digits']
+  },
   firstName: {
     type: String,
     required: [true, 'First name is required'],
@@ -126,8 +133,9 @@ studentSchema.set('toJSON', { virtuals: true });
 studentSchema.set('toObject', { virtuals: true });
 
 // Index for better search performance
-studentSchema.index({ firstName: 'text', lastName: 'text', email: 'text', program: 'text' });
+studentSchema.index({ firstName: 'text', lastName: 'text', email: 'text', program: 'text', studentID: 'text' });
 studentSchema.index({ email: 1 });
+studentSchema.index({ studentID: 1 });
 studentSchema.index({ program: 1 });
 studentSchema.index({ gender: 1 });
 studentSchema.index({ createdAt: -1 });

@@ -13,7 +13,13 @@ const StudentForm: React.FC = () => {
   const isEditing = Boolean(id);
   const { loading: apiLoading, execute } = useAsyncOperation();
 
+  // Generate a 10-digit student ID
+  const generateStudentID = () => {
+    return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+  };
+
   const [formData, setFormData] = useState({
+    studentID: '',
     firstName: '',
     lastName: '',
     parentName: '',
@@ -41,6 +47,16 @@ const StudentForm: React.FC = () => {
     'Përkujdesje dhe Mirëqenie Sociale',
   ];
 
+  // Generate student ID when creating a new student
+  useEffect(() => {
+    if (!isEditing) {
+      setFormData(prev => ({
+        ...prev,
+        studentID: generateStudentID()
+      }));
+    }
+  }, [isEditing]);
+
   useEffect(() => {
     if (isEditing && id) {
       const loadStudent = async () => {
@@ -49,6 +65,7 @@ const StudentForm: React.FC = () => {
         if (result) {
           setStudent(result);
           setFormData({
+            studentID: result.studentID || '',
             firstName: result.firstName,
             lastName: result.lastName,
             parentName: result.parentName,
@@ -75,6 +92,7 @@ const StudentForm: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    if (!formData.studentID.trim()) newErrors.studentID = 'ID-ja e studentit është e detyrueshme';
     if (!formData.firstName.trim()) newErrors.firstName = 'Emri është i detyrueshëm';
     if (!formData.lastName.trim()) newErrors.lastName = 'Mbiemri është i detyrueshëm';
     if (!formData.parentName.trim()) newErrors.parentName = 'Emri i prindit është i detyrueshëm';
@@ -112,11 +130,16 @@ const StudentForm: React.FC = () => {
       setLoading(true);
       if (isEditing && id) {
         await updateStudent(id, formData);
+        navigate('/students');
       } else {
         await addStudent(formData);
+        
+        // Show success message with login credentials for new students
+        const username = `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`;
+        alert(`✅ Student created successfully!\n\n🆔 Student ID: ${formData.studentID}\n🔐 Login credentials created:\nUsername: ${username}\nPassword: user123\n\nThe student can now login to their dashboard.`);
+        
+        navigate('/students');
       }
-      
-      navigate('/students');
     } catch (error) {
       console.error('Error saving student:', error);
     } finally {
@@ -163,8 +186,63 @@ const StudentForm: React.FC = () => {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Personal Information */}
+             {/* Information Note */}
+       {!isEditing && (
+         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+           <div className="flex items-start">
+             <div className="flex-shrink-0">
+               <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+               </svg>
+             </div>
+             <div className="ml-3">
+               <h3 className="text-sm font-medium text-blue-800">
+                 Automatike: Krijimi i llogarisë së përdoruesit
+               </h3>
+               <div className="mt-2 text-sm text-blue-700">
+                 <p>Kur krijoni një student të ri, do të krijohet automatikisht një llogari përdoruesi me:</p>
+                 <ul className="list-disc list-inside mt-1 space-y-1">
+                   <li><strong>Student ID:</strong> {formData.studentID} (10 shifra)</li>
+                   <li><strong>Username:</strong> emri.mbiemri (p.sh. andi.hoxha)</li>
+                   <li><strong>Password:</strong> user123</li>
+                   <li>Studentët mund të identifikohen në sistemin e tyre</li>
+                 </ul>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       <form onSubmit={handleSubmit} className="space-y-8">
+         {/* Student ID */}
+         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+           <h3 className="text-lg font-medium text-gray-900 mb-6">ID e Studentit</h3>
+           
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
+             <div>
+               <label className="block text-sm font-medium text-gray-700 mb-2">
+                 Student ID *
+               </label>
+               <input
+                 type="text"
+                 value={formData.studentID}
+                 onChange={(e) => handleInputChange('studentID', e.target.value)}
+                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                   errors.studentID ? 'border-red-300' : 'border-gray-300'
+                 } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                 placeholder="1234567890"
+                 readOnly={!isEditing}
+                 maxLength={10}
+               />
+               {errors.studentID && <p className="mt-1 text-sm text-red-600">{errors.studentID}</p>}
+               {!isEditing && (
+                 <p className="mt-1 text-sm text-gray-500">ID-ja gjenerohet automatikisht</p>
+               )}
+             </div>
+           </div>
+         </div>
+
+         {/* Personal Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Personale</h3>
           

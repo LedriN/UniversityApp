@@ -20,6 +20,7 @@ export const mockUsers: User[] = [
 export const mockStudents: Student[] = [
   {
     id: '1',
+    studentID: '1234567890',
     firstName: 'Andi',
     lastName: 'Hoxha',
     parentName: 'Petrit Hoxha',
@@ -39,6 +40,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '2',
+    studentID: '2345678901',
     firstName: 'Elsa',
     lastName: 'Kola',
     parentName: 'Agim Kola',
@@ -58,6 +60,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '3',
+    studentID: '3456789012',
     firstName: 'Marko',
     lastName: 'Gjoka',
     parentName: 'Ilir Gjoka',
@@ -77,6 +80,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '4',
+    studentID: '4567890123',
     firstName: 'Sara',
     lastName: 'Mema',
     parentName: 'Fatmir Mema',
@@ -96,6 +100,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '5',
+    studentID: '5678901234',
     firstName: 'Denis',
     lastName: 'Rama',
     parentName: 'Sokol Rama',
@@ -115,6 +120,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '6',
+    studentID: '6789012345',
     firstName: 'Anxhela',
     lastName: 'Basha',
     parentName: 'Genc Basha',
@@ -134,6 +140,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '7',
+    studentID: '7890123456',
     firstName: 'Klajdi',
     lastName: 'Zeneli',
     parentName: 'Arben Zeneli',
@@ -153,6 +160,7 @@ export const mockStudents: Student[] = [
   },
   {
     id: '8',
+    studentID: '8901234567',
     firstName: 'Erjona',
     lastName: 'Duka',
     parentName: 'Flamur Duka',

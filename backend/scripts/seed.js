@@ -43,11 +43,21 @@ const seedData = async () => {
     });
     await staffUser.save();
 
+    // Create example student user
+    const studentUser = new User({
+      username: 'andi.hoxha',
+      email: 'andi.hoxha@student.edu.al',
+      password: 'user123',
+      role: 'student'
+    });
+    await studentUser.save();
+
     console.log('👥 Created users');
 
     // Sample students data
     const studentsData = [
       {
+        studentID: '1234567890',
         firstName: 'Andi',
         lastName: 'Hoxha',
         parentName: 'Petrit Hoxha',
@@ -64,6 +74,7 @@ const seedData = async () => {
         paidAmount: 300000
       },
       {
+        studentID: '2345678901',
         firstName: 'Elsa',
         lastName: 'Kola',
         parentName: 'Agim Kola',
@@ -80,6 +91,7 @@ const seedData = async () => {
         paidAmount: 200000
       },
       {
+        studentID: '3456789012',
         firstName: 'Marko',
         lastName: 'Gjoka',
         parentName: 'Ilir Gjoka',
@@ -96,6 +108,7 @@ const seedData = async () => {
         paidAmount: 140000
       },
       {
+        studentID: '4567890123',
         firstName: 'Sara',
         lastName: 'Mema',
         parentName: 'Fatmir Mema',
@@ -112,6 +125,7 @@ const seedData = async () => {
         paidAmount: 0
       },
       {
+        studentID: '5678901234',
         firstName: 'Denis',
         lastName: 'Rama',
         parentName: 'Sokol Rama',
@@ -128,6 +142,7 @@ const seedData = async () => {
         paidAmount: 220000
       },
       {
+        studentID: '6789012345',
         firstName: 'Anxhela',
         lastName: 'Basha',
         parentName: 'Genc Basha',
@@ -144,6 +159,7 @@ const seedData = async () => {
         paidAmount: 100000
       },
       {
+        studentID: '7890123456',
         firstName: 'Klajdi',
         lastName: 'Zeneli',
         parentName: 'Arben Zeneli',
@@ -160,6 +176,7 @@ const seedData = async () => {
         paidAmount: 80000
       },
       {
+        studentID: '8901234567',
         firstName: 'Erjona',
         lastName: 'Duka',
         parentName: 'Flamur Duka',
@@ -185,11 +202,12 @@ const seedData = async () => {
 
     console.log('🎓 Created sample students');
     console.log('\n📊 Seed Summary:');
-    console.log(`👥 Users created: 2`);
+    console.log(`👥 Users created: 3`);
     console.log(`🎓 Students created: ${studentsData.length}`);
     console.log('\n🔐 Login Credentials:');
     console.log('Admin: username=admin, password=admin123');
     console.log('Staff: username=staff, password=staff123');
+    console.log('Student: username=andi.hoxha, password=user123');
 
     process.exit(0);
   } catch (error) {

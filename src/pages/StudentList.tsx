@@ -18,7 +18,8 @@ const StudentList: React.FC = () => {
           !student.firstName.toLowerCase().includes(searchLower) &&
           !student.lastName.toLowerCase().includes(searchLower) &&
           !student.email.toLowerCase().includes(searchLower) &&
-          !student.program.toLowerCase().includes(searchLower)
+          !student.program.toLowerCase().includes(searchLower) &&
+          !student.studentID.toLowerCase().includes(searchLower)
         ) {
           return false;
         }
@@ -103,7 +104,7 @@ const StudentList: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Lista e Studentëve</h1>
         <Link
-          to="/students/add"
+          to="/admin/students/add"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -226,6 +227,9 @@ const StudentList: React.FC = () => {
                   Student
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Student ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Programi
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -263,6 +267,9 @@ const StudentList: React.FC = () => {
                           <div className="text-sm text-gray-500">{student.email}</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                      {student.studentID}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {student.program}
