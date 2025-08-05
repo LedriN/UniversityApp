@@ -68,54 +68,146 @@ const StudentDetail: React.FC = () => {
     return Math.min(100, (student.paidAmount / student.totalAmount) * 100);
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const pdf = new jsPDF();
     
-    // Header
-    pdf.setFontSize(20);
-    pdf.text('Universiteti Privat', 20, 30);
+    // Professional color scheme
+    const primaryColor = [31, 41, 55]; // Dark gray
+    const secondaryColor = [107, 114, 128]; // Gray-500
+    const accentColor = [59, 130, 246]; // Blue-600
+    const lightGray = [249, 250, 251]; // Gray-50
+    const borderColor = [229, 231, 235]; // Gray-200
+    
+    // Page dimensions
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 25;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    // Professional header
+    pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    pdf.rect(0, 0, pageWidth, 50, 'F');
+    
+    // University name in header
+    pdf.setFontSize(24);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('UNIVERSITETI PRIVAT', pageWidth / 2, 25, { align: 'center' });
+    
+    // Subtitle
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Universiteti Fama', pageWidth / 2, 35, { align: 'center' });
+    pdf.text('Rruga Selajdin Mullaabazi nr.7', pageWidth / 2, 42, { align: 'center' });
+    
+    // Document title with elegant styling
+    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('KARTË E STUDENTIT', pageWidth / 2, 70, { align: 'center' });
+    
+    // Student name as main heading
     pdf.setFontSize(16);
-    pdf.text('Te dhenat e Studentit', 20, 45);
+    pdf.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
+    pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 85, { align: 'center' });
     
-    // Student Info
+    // Student ID prominently displayed
     pdf.setFontSize(12);
-    let yPos = 70;
+    pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+    pdf.text(`ID-ja e studentit: ${student.studentID}`, pageWidth / 2, 95, { align: 'center' });
     
-    const addLine = (label: string, value: string) => {
-      pdf.text(`${label}: ${value}`, 20, yPos);
-      yPos += 10;
+    // Professional information sections
+    let yPos = 110;
+    
+    // Personal Information Section
+    pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+    pdf.rect(margin, yPos, contentWidth, 60, 'F');
+    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+    pdf.setLineWidth(0.5);
+    pdf.rect(margin, yPos, contentWidth, 60, 'S');
+    
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    pdf.text('TË DHËNA PERSONALE', margin + 20, yPos + 20);
+    
+    yPos += 25;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
+    
+    const addInfoRow = (label: string, value: string, x: number = margin + 20) => {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.text(label + ':', x, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(value, x + 55, yPos);
+      yPos += 8;
     };
     
-    addLine('Emri i plote', `${student.firstName} ${student.lastName}`);
-    addLine('Emri i prindit', student.parentName);
-    addLine('Gjinia', student.gender === 'M' ? 'Mashkull' : 'Femer');
-    addLine('Mosha', `${calculateAge(student.dateOfBirth)} vjec`);
-    addLine('Data e lindjes', new Date(student.dateOfBirth).toLocaleDateString('sq-AL'));
-    addLine('Adresa', student.address);
-    addLine('Telefoni', student.phone);
-    addLine('Email', student.email);
-    addLine('Shkolla e meparshme', student.previousSchool);
-    addLine('Adresa e shkolles se meparshme', student.previousSchoolAddress);
-    addLine('Programi', student.program);
-    addLine('Viti akademik', student.academicYear);
+    addInfoRow('Emri i Plotë', `${student.firstName} ${student.lastName}`);
+    addInfoRow('Gjinia', student.gender === 'M' ? 'Mashkull' : 'Femër');
+    addInfoRow('Mosha', `${calculateAge(student.dateOfBirth)} vjeç`);
+    addInfoRow('Telefoni', student.phone);
+    addInfoRow('Email', student.email);
     
-    yPos += 10;
+    // Academic Information Section
+    yPos += 20;
+    pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+    pdf.rect(margin, yPos, contentWidth, 50, 'F');
+    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+    pdf.rect(margin, yPos, contentWidth, 50, 'S');
+    
     pdf.setFontSize(14);
-    pdf.text('Te dhena financiare:', 20, yPos);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    pdf.text('TË DHËNA ARSIMORE', margin + 20, yPos + 20);
+    
+    yPos += 25;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
+    
+    addInfoRow('Programi', student.program);
+    addInfoRow('Viti Akademik', student.academicYear);
+    addInfoRow('Shkolla e Mëparshme', student.previousSchool);
+    
+    // Payment Status Section
     yPos += 15;
+    pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+    pdf.rect(margin, yPos, contentWidth, 35, 'F');
+    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+    pdf.rect(margin, yPos, contentWidth, 35, 'S');
     
-    pdf.setFontSize(12);
-    addLine('Shuma totale', `€${(student.totalAmount / 100).toLocaleString()}`);
-    addLine('Shuma e paguar', `€${(student.paidAmount / 100).toLocaleString()}`);
-    addLine('Borxhi i mbetur', `€${((student.totalAmount - student.paidAmount) / 100).toLocaleString()}`);
-    addLine('Statusi i pageses', getPaymentStatus().label);
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    pdf.text('STATUSI I PAGESËS', margin + 15, yPos + 15);
     
-    // Footer
     yPos += 20;
     pdf.setFontSize(10);
-    pdf.text(`Gjeneruar me: ${new Date().toLocaleDateString('sq-AL')}`, 20, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
     
-    pdf.save(`student-${student.firstName}-${student.lastName}.pdf`);
+    const paymentStatus = getPaymentStatus();
+    addInfoRow('Statusi', paymentStatus.label);
+    addInfoRow('Shuma Totale', `€${(student.totalAmount / 100).toLocaleString()}`);
+    addInfoRow('E Paguar', `€${(student.paidAmount / 100).toLocaleString()}`);
+    
+    // Professional footer
+    const footerY = pageHeight - 30;
+    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+    pdf.setLineWidth(1);
+    pdf.line(margin, footerY, pageWidth - margin, footerY);
+    
+    pdf.setFontSize(9);
+    pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+    pdf.text(`Dokumenti u gjenerua më: ${new Date().toLocaleDateString('sq-AL')}`, margin, footerY + 8);
+    pdf.text('Universiteti Fama ', pageWidth - margin, footerY + 8, { align: 'right' });
+    
+    // Save the PDF
+    pdf.save(`Karte_Studentit_${student.firstName}_${student.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const paymentStatus = getPaymentStatus();
@@ -137,7 +229,7 @@ const StudentDetail: React.FC = () => {
         
         <div className="flex items-center space-x-3">
           <button
-            onClick={exportToPDF}
+            onClick={() => exportToPDF().catch(console.error)}
             className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             <Download className="h-4 w-4 mr-2" />
@@ -343,7 +435,7 @@ const StudentDetail: React.FC = () => {
                 Modifiko të Dhënat
               </Link>
               <button
-                onClick={exportToPDF}
+                onClick={() => exportToPDF().catch(console.error)}
                 className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
               >
                 <Download className="h-4 w-4 mr-2" />

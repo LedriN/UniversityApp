@@ -143,6 +143,100 @@ const StudentList: React.FC = () => {
     return today.getFullYear() - birthDate.getFullYear();
   };
 
+  const exportToCSV = () => {
+    if (filteredStudents.length === 0) {
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Nuk ka të dhëna për të eksportuar.',
+        duration: 3000
+      });
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'ID e Studentit',
+      'Emri',
+      'Mbiemri',
+      'Email',
+      'Telefon',
+      'Gjinia',
+      'Data e Lindjes',
+      'Mosha',
+      'Adresa',
+      'Programi',
+      'Viti Akademik',
+      'Shuma Totale (€)',
+      'Shuma e Paguar (€)',
+      'Borxhi (€)',
+      'Statusi i Pagesës',
+      'Shkolla e Mëparshme',
+      'Adresa e Shkollës'
+    ];
+
+    // Convert students to CSV rows
+    const csvRows = [headers];
+
+    filteredStudents.forEach(student => {
+      const age = calculateAge(student.dateOfBirth);
+      const paymentStatus = getPaymentStatus(student);
+      const debt = Math.max(0, student.totalAmount - student.paidAmount);
+      
+      const row = [
+        student.studentID,
+        student.firstName,
+        student.lastName,
+        student.email || '',
+        student.phone || '',
+        student.gender === 'M' ? 'Mashkull' : 'Femër',
+        new Date(student.dateOfBirth).toLocaleDateString('sq-AL'),
+        age.toString(),
+        student.address || '',
+        student.program || '',
+        student.academicYear || '',
+        student.totalAmount.toFixed(2),
+        student.paidAmount.toFixed(2),
+        debt.toFixed(2),
+        paymentStatus.label,
+        student.previousSchool || '',
+        student.previousSchoolAddress || ''
+      ];
+
+      csvRows.push(row);
+    });
+
+    // Convert to CSV string
+    const csvContent = csvRows.map(row => 
+      row.map(field => {
+        // Escape quotes and wrap in quotes if contains comma, quote, or newline
+        const escapedField = field.toString().replace(/"/g, '""');
+        if (escapedField.includes(',') || escapedField.includes('"') || escapedField.includes('\n')) {
+          return `"${escapedField}"`;
+        }
+        return escapedField;
+      }).join(',')
+    ).join('\n');
+
+    // Create and download file
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `studentet_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast({
+      type: 'success',
+      title: 'Sukses!',
+      message: `${filteredStudents.length} studentë u eksportuan me sukses në CSV.`,
+      duration: 4000
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -255,9 +349,12 @@ const StudentList: React.FC = () => {
       {/* Results Summary */}
       <div className="flex items-center justify-between text-sm text-gray-600">
         <span>Shfaqen {filteredStudents.length} nga {students.length} studentë</span>
-        <button className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+        <button 
+          onClick={exportToCSV}
+          className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+        >
           <Download className="h-4 w-4 mr-2" />
-          Eksporto
+          Eksporto CSV
         </button>
       </div>
 
@@ -341,14 +438,14 @@ const StudentList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <Link
-                          to={`/students/${student.id}`}
+                          to={`/admin/students/${student.id}`}
                           className="text-blue-600 hover:text-blue-900 transition-colors"
                           title="Shiko detajet"
                         >
                           <Eye className="h-4 w-4" />
                         </Link>
                         <Link
-                          to={`/students/${student.id}/edit`}
+                          to={`/admin/students/${student.id}/edit`}
                           className="text-indigo-600 hover:text-indigo-900 transition-colors"
                           title="Modifiko"
                         >
