@@ -50,6 +50,7 @@ const studentSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: [true, 'Phone number is required'],
+    unique: true,
     trim: true,
     match: [/^(\+355|0)[0-9]{8,9}$/, 'Please enter a valid Albanian phone number']
   },
@@ -131,6 +132,7 @@ studentSchema.set('toObject', { virtuals: true });
 // Index for better search performance
 studentSchema.index({ firstName: 'text', lastName: 'text', email: 'text', program: 'text', studentID: 'text' });
 studentSchema.index({ email: 1 });
+studentSchema.index({ phone: 1 });
 studentSchema.index({ studentID: 1 });
 studentSchema.index({ program: 1 });
 studentSchema.index({ gender: 1 });

@@ -41,6 +41,7 @@ const StudentForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [student, setStudent] = useState<Student | null>(null);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
 
   const programs = [
     'Shkenca Kompjuterike',
@@ -123,10 +124,60 @@ const StudentForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkForDuplicates = async () => {
+    if (!formData.email.trim() && !formData.phone.trim()) return true;
+    
+    setCheckingDuplicates(true);
+    try {
+      const students = await apiService.getStudents();
+      const newErrors: Record<string, string> = { ...errors };
+      
+      // Check for duplicate email
+      if (formData.email.trim()) {
+        const existingEmail = students.find(s => 
+          s.email.toLowerCase() === formData.email.toLowerCase() && 
+          (!isEditing || s.id !== id)
+        );
+        if (existingEmail) {
+          newErrors.email = 'Email-i tashmë ekziston në sistem, ju lutem provoni me një email tjetër';
+        } else {
+          delete newErrors.email;
+        }
+      }
+      
+      // Check for duplicate phone
+      if (formData.phone.trim()) {
+        const existingPhone = students.find(s => 
+          s.phone === formData.phone && 
+          (!isEditing || s.id !== id)
+        );
+        if (existingPhone) {
+          newErrors.phone = 'Numri i telefonit tashmë ekziston në sistem';
+        } else {
+          delete newErrors.phone;
+        }
+      }
+      
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    } catch (error) {
+      console.error('Error checking duplicates:', error);
+      return true; // Allow submission if check fails
+    } finally {
+      setCheckingDuplicates(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
+
+    // Check for duplicates before submitting
+    if (!isEditing) {
+      const noDuplicates = await checkForDuplicates();
+      if (!noDuplicates) return;
+    }
 
     try {
       setLoading(true);
@@ -168,14 +219,31 @@ const StudentForm: React.FC = () => {
           navigate('/students');
         }, 2000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving student:', error);
-      showToast({
-        type: 'error',
-        title: 'Gabim!',
-        message: 'Gabim gjatë ruajtjes së studentit. Ju lutemi provoni përsëri.',
-        duration: 5000
-      });
+      
+      // Handle field-specific errors from backend
+      if (error.response?.data?.field) {
+        const field = error.response.data.field;
+        const message = error.response.data.message;
+        setErrors(prev => ({ ...prev, [field]: message }));
+        
+        showToast({
+          type: 'error',
+          title: 'Gabim!',
+          message: message,
+          duration: 5000
+        });
+      } else {
+        // Handle general errors
+        const errorMessage = error.response?.data?.message || 'Gabim gjatë ruajtjes së studentit. Ju lutemi provoni përsëri.';
+        showToast({
+          type: 'error',
+          title: 'Gabim!',
+          message: errorMessage,
+          duration: 5000
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -187,6 +255,79 @@ const StudentForm: React.FC = () => {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
+
+  // Handle phone number input - only allow numbers and specific characters
+  const handlePhoneChange = (value: string) => {
+    // Only allow numbers, +, and spaces
+    const cleanedValue = value.replace(/[^\d\s+]/g, '');
+    handleInputChange('phone', cleanedValue);
+    debouncedDuplicateCheck('phone', cleanedValue);
+  };
+
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    const requiredFields = [
+      'studentID', 'firstName', 'lastName', 'parentName', 
+      'dateOfBirth', 'address', 'phone', 'email', 'program'
+    ];
+    
+    return requiredFields.every(field => {
+      const value = formData[field as keyof typeof formData];
+      if (typeof value === 'string') {
+        return value.trim() !== '';
+      }
+      return value !== null && value !== undefined;
+    }) && 
+    formData.totalAmount > 0 && 
+    formData.paidAmount >= 0 && 
+    formData.paidAmount <= formData.totalAmount &&
+    Object.keys(errors).length === 0;
+  };
+
+  // Debounced duplicate check for email and phone
+  const debouncedDuplicateCheck = React.useCallback(
+    React.useMemo(() => {
+      let timeoutId: number;
+      return (field: 'email' | 'phone', value: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(async () => {
+          if (!value.trim() || isEditing) return;
+          
+          try {
+            const students = await apiService.getStudents();
+            const newErrors = { ...errors };
+            
+            if (field === 'email') {
+              const existingEmail = students.find(s => 
+                s.email.toLowerCase() === value.toLowerCase() && 
+                (!isEditing || s.id !== id)
+              );
+              if (existingEmail) {
+                newErrors.email = 'Email-i tashmë ekziston në sistem, ju lutem provoni me një email tjetër';
+              } else {
+                delete newErrors.email;
+              }
+            } else if (field === 'phone') {
+              const existingPhone = students.find(s => 
+                s.phone === value && 
+                (!isEditing || s.id !== id)
+              );
+              if (existingPhone) {
+                newErrors.phone = 'Numri i telefonit tashmë ekziston në sistem';
+              } else {
+                delete newErrors.phone;
+              }
+            }
+            
+            setErrors(newErrors);
+          } catch (error) {
+            console.error('Error checking duplicates:', error);
+          }
+        }, 500);
+      };
+    }, [errors, isEditing, id]),
+    [errors, isEditing, id]
+  );
 
   const calculateDebt = () => {
     return Math.max(0, formData.totalAmount - formData.paidAmount);
@@ -235,12 +376,12 @@ const StudentForm: React.FC = () => {
                </h3>
                <div className="mt-2 text-sm text-blue-700">
                  <p>Kur krijoni një student të ri, do të krijohet automatikisht një llogari përdoruesi dhe fjalëkalimi do të dërgohet në email-in e studentit.</p>
+                 <p className="mt-1"><strong>Shënim:</strong> Email-i dhe numri i telefonit duhet të jenë unikë në sistem.</p>
                </div>
              </div>
            </div>
          </div>
        )}
-
        <form onSubmit={handleSubmit} className="space-y-8">
          {/* Student ID */}
          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -249,7 +390,7 @@ const StudentForm: React.FC = () => {
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
              <div>
                <label className="block text-sm font-medium text-gray-700 mb-2">
-                 Student ID *
+                 Student ID <span className="text-red-500">*</span>
                </label>
                <input
                  type="text"
@@ -277,7 +418,7 @@ const StudentForm: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Emri *
+                Emri <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -293,7 +434,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mbiemri *
+                Mbiemri <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -309,7 +450,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Emri i Prindit *
+                Emri i Prindit <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -325,7 +466,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gjinia *
+                Gjinia <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.gender}
@@ -339,7 +480,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Data e Lindjes *
+                Data e Lindjes <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -354,23 +495,25 @@ const StudentForm: React.FC = () => {
 
             <div className="sm:col-span-2 lg:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Numri i Telefonit *
+                Numri i Telefonit <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.phone ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="+355 69 123 4567"
+                maxLength={15}
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+              <p className="mt-1 text-xs text-gray-500">Vetëm numra, hapësira dhe simboli +</p>
             </div>
 
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Adresa *
+                Adresa <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -386,12 +529,15 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
+                Email <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={(e) => {
+                  handleInputChange('email', e.target.value);
+                  debouncedDuplicateCheck('email', e.target.value);
+                }}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.email ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -435,7 +581,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Programi *
+                Programi <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.program}
@@ -454,7 +600,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Viti Akademik *
+                Viti Akademik <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.academicYear}
@@ -476,7 +622,7 @@ const StudentForm: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shuma Totale (€) *
+                Shuma Totale (€) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -494,7 +640,7 @@ const StudentForm: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shuma e Paguar (€) *
+                Shuma e Paguar (€) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -569,11 +715,11 @@ const StudentForm: React.FC = () => {
           </button>
           <button
             type="submit"
-            disabled={loading || apiLoading}
+            disabled={loading || apiLoading || checkingDuplicates || !isFormValid()}
             className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Save className="h-4 w-4 mr-2" />
-            {(loading || apiLoading) ? 'Duke ruajtur...' : (isEditing ? 'Ruaj Ndryshimet' : 'Shto Studentin')}
+            {checkingDuplicates ? 'Duke kontrolluar...' : (loading || apiLoading) ? 'Duke ruajtur...' : (isEditing ? 'Ruaj Ndryshimet' : 'Shto Studentin')}
           </button>
         </div>
       </form>

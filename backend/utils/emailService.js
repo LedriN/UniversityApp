@@ -37,7 +37,7 @@ const sendWelcomeEmail = async (studentEmail, studentName, username, password) =
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: studentEmail,
-      subject: 'Mirëseerdhët në Universitetin FAMA - Kredencialet tuaja',
+      subject: 'Mirë Se Vini në Universitetin FAMA - Kredencialet tuaja',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
           <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -74,7 +74,6 @@ const sendWelcomeEmail = async (studentEmail, studentName, username, password) =
               <h4 style="color: #856404; margin: 0 0 10px 0; font-size: 16px;">⚠️ Informacion i rëndësishëm:</h4>
               <ul style="color: #856404; margin: 0; padding-left: 20px;">
                 <li>Ruajni këto kredenciale në një vend të sigurt</li>
-                <li>Ndryshoni fjalëkalimin tuaj pas hyrjes së parë</li>
                 <li>Mos ndani këto kredenciale me askënd tjetër</li>
                 <li>Nëse keni probleme, kontaktoni administratorin</li>
               </ul>

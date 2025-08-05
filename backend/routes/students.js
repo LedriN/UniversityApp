@@ -159,6 +159,29 @@ router.post('/', [
       });
     }
 
+    // Check for existing student with same email or phone
+    const existingStudent = await Student.findOne({
+      $or: [
+        { email: req.body.email.toLowerCase() },
+        { phone: req.body.phone }
+      ]
+    });
+
+    if (existingStudent) {
+      if (existingStudent.email.toLowerCase() === req.body.email.toLowerCase()) {
+        return res.status(400).json({ 
+          message: 'Email-i tashmë ekziston në sistem',
+          field: 'email'
+        });
+      }
+      if (existingStudent.phone === req.body.phone) {
+        return res.status(400).json({ 
+          message: 'Numri i telefonit tashmë ekziston në sistem',
+          field: 'phone'
+        });
+      }
+    }
+
     const student = new Student(req.body);
     await student.save();
 
@@ -207,7 +230,26 @@ router.post('/', [
     res.status(201).json(student);
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ message: 'Email already exists' });
+      // Handle MongoDB duplicate key errors
+      if (error.keyPattern && error.keyPattern.email) {
+        return res.status(400).json({ 
+          message: 'Email-i tashmë ekziston në sistem',
+          field: 'email'
+        });
+      }
+      if (error.keyPattern && error.keyPattern.phone) {
+        return res.status(400).json({ 
+          message: 'Numri i telefonit tashmë ekziston në sistem',
+          field: 'phone'
+        });
+      }
+      if (error.keyPattern && error.keyPattern.studentID) {
+        return res.status(400).json({ 
+          message: 'ID-ja e studentit tashmë ekziston në sistem',
+          field: 'studentID'
+        });
+      }
+      return res.status(400).json({ message: 'Të dhënat tashmë ekzistojnë në sistem' });
     }
     if (error.name === 'ValidationError') {
       return res.status(400).json({ 
@@ -264,13 +306,58 @@ router.put('/:id', [
       });
     }
 
+    // Check for existing student with same email or phone (excluding current student)
+    if (req.body.email || req.body.phone) {
+      const existingStudent = await Student.findOne({
+        _id: { $ne: req.params.id }, // Exclude current student
+        $or: [
+          ...(req.body.email ? [{ email: req.body.email.toLowerCase() }] : []),
+          ...(req.body.phone ? [{ phone: req.body.phone }] : [])
+        ]
+      });
+
+      if (existingStudent) {
+        if (req.body.email && existingStudent.email.toLowerCase() === req.body.email.toLowerCase()) {
+          return res.status(400).json({ 
+            message: 'Email-i tashmë ekziston në sistem',
+            field: 'email'
+          });
+        }
+        if (req.body.phone && existingStudent.phone === req.body.phone) {
+          return res.status(400).json({ 
+            message: 'Numri i telefonit tashmë ekziston në sistem',
+            field: 'phone'
+          });
+        }
+      }
+    }
+
     Object.assign(student, req.body);
     await student.save();
 
     res.json(student);
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ message: 'Email already exists' });
+      // Handle MongoDB duplicate key errors
+      if (error.keyPattern && error.keyPattern.email) {
+        return res.status(400).json({ 
+          message: 'Email-i tashmë ekziston në sistem',
+          field: 'email'
+        });
+      }
+      if (error.keyPattern && error.keyPattern.phone) {
+        return res.status(400).json({ 
+          message: 'Numri i telefonit tashmë ekziston në sistem',
+          field: 'phone'
+        });
+      }
+      if (error.keyPattern && error.keyPattern.studentID) {
+        return res.status(400).json({ 
+          message: 'ID-ja e studentit tashmë ekziston në sistem',
+          field: 'studentID'
+        });
+      }
+      return res.status(400).json({ message: 'Të dhënat tashmë ekzistojnë në sistem' });
     }
     if (error.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid student ID' });
