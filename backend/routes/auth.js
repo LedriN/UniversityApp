@@ -49,13 +49,7 @@ router.post('/login', [
 
     // Return token in response body (frontend should store in localStorage)
     res.json({
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt
-      },
+      user: user.toJSON(),
       token // <-- JWT for 24h, not set as cookie
     });
   } catch (error) {
@@ -75,13 +69,7 @@ router.post('/logout', auth, (req, res) => {
 // @desc    Get current user
 // @access  Private
 router.get('/me', auth, (req, res) => {
-  res.json({
-    id: req.user._id,
-    username: req.user.username,
-    email: req.user.email,
-    role: req.user.role,
-    createdAt: req.user.createdAt
-  });
+  res.json(req.user.toJSON());
 });
 
 module.exports = router;

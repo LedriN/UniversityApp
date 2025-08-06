@@ -18,6 +18,7 @@ interface AppContextType {
   login: (username: string, password: string) => boolean;
   logout: () => void;
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
+  deleteUser: (id: string) => void;
   refreshStudents: () => Promise<void>;
   refreshUsers: () => Promise<void>;
 }
@@ -256,6 +257,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const deleteUser = async (id: string) => {
+    // Only allow admin users to delete users
+    if (currentUser?.role !== 'admin') {
+      throw new Error('Access denied. Admin privileges required.');
+    }
+    
+    // Prevent admin from deleting themselves
+    if (currentUser.id === id) {
+      throw new Error('Cannot delete your own account');
+    }
+    
+    if (!isOnline) {
+      // Mock implementation for offline mode
+      setUsers(prev => prev.filter(user => user.id !== id));
+      return;
+    }
+    
+    const result = await execute(() => apiService.deleteUser(id));
+    if (result !== null) {
+      setUsers(prev => prev.filter(user => user.id !== id));
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       students,
@@ -273,6 +297,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       login,
       logout,
       addUser,
+      deleteUser,
       refreshStudents,
       refreshUsers
     }}>

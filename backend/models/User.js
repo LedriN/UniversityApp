@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Username is required'],
     unique: true,
     trim: true,
+    lowercase: true,
     minlength: [3, 'Username must be at least 3 characters long'],
     maxlength: [30, 'Username cannot exceed 30 characters']
   },
@@ -50,10 +51,12 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Remove password from JSON output
+// Remove password from JSON output and transform _id to id
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;
+  user.id = user._id;
+  delete user._id;
   return user;
 };
 

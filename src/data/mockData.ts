@@ -14,6 +14,13 @@ export const mockUsers: User[] = [
     email: 'staff@university.edu.al',
     role: 'staff',
     createdAt: '2024-01-01T00:00:00.000Z'
+  },
+  {
+    id: '3',
+    username: 'student',
+    email: 'student@university.edu.al',
+    role: 'student',
+    createdAt: '2024-01-01T00:00:00.000Z'
   }
 ];
 
