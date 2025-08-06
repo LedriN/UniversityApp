@@ -504,7 +504,7 @@ const StudentForm: React.FC = () => {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.phone ? 'border-red-300' : 'border-gray-300'
                 }`}
-                placeholder="+355 69 123 4567"
+                placeholder="044 123 456"
                 maxLength={15}
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}

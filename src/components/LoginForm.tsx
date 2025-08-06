@@ -101,13 +101,6 @@ const LoginForm: React.FC = () => {
             >
               {loading ? 'Duke u identifikuar...' : 'Identifikohu'}
             </button>
-
-            <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-              <p><strong>Demo përdorues:</strong></p>
-              <p><strong>Admin:</strong> admin / admin123</p>
-              <p><strong>Staff:</strong> staff / staff123</p>
-              <p><strong>Student:</strong> andi.hoxha / user123</p>
-            </div>
           </div>
         </form>
       </div>
