@@ -21,7 +21,8 @@ PORT=8080
 NODE_ENV=production
 
 # Frontend URL for CORS (UPDATE THIS AFTER DEPLOYMENT)
-FRONTEND_URL=https://your-app-name.ondigitalocean.app
+# For initial deployment, you can use a placeholder or leave empty
+FRONTEND_URL=https://placeholder-url.com
 ```
 
 ## Frontend Environment Variables (.env file in root directory)
@@ -52,8 +53,9 @@ FRONTEND_URL=https://your-app-name.ondigitalocean.app
 ## Important Notes
 
 1. **Update URLs After Deployment**: 
-   - Replace `your-app-name.ondigitalocean.app` with your actual DigitalOcean app URL
-   - This will be provided after you create the app in DigitalOcean
+   - Initially use a placeholder URL for `FRONTEND_URL`
+   - After creating the app in DigitalOcean, you'll get the actual URL
+   - Update the environment variable with the real URL and restart the app
 
 2. **Security**: 
    - Never commit `.env` files to version control

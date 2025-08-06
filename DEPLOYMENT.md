@@ -66,7 +66,7 @@ EMAIL_PASSWORD=vpvh wxfy fjna hrqm
 FRONTEND_URL=https://your-app-name.ondigitalocean.app
 ```
 
-**Important**: Replace `your-app-name.ondigitalocean.app` with your actual DigitalOcean app URL after deployment.
+**Important**: For initial deployment, use a placeholder URL for `FRONTEND_URL`. After creating the app, you'll get the actual URL and can update this environment variable.
 
 ## Step 4: Database Setup
 
