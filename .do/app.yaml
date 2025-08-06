@@ -1,0 +1,29 @@
+name: university-app
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: your-username/your-repo-name
+    branch: main
+  run_command: npm start
+  build_command: npm run build:full
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "8080"
+  - key: MONGODB_URI
+    value: ${MONGODB_URI}
+  - key: JWT_SECRET
+    value: ${JWT_SECRET}
+  - key: JWT_EXPIRES_IN
+    value: ${JWT_EXPIRES_IN}
+  - key: FRONTEND_URL
+    value: ${FRONTEND_URL}
+  - key: EMAIL_USER
+    value: ${EMAIL_USER}
+  - key: EMAIL_PASSWORD
+    value: ${EMAIL_PASSWORD} 
