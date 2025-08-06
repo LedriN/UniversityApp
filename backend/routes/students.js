@@ -11,7 +11,7 @@ const router = express.Router();
 // @desc    Get all students with filtering
 // @access  Private
 router.get('/', [
-  // auth, // Temporarily removed for testing
+  auth,
   query('search').optional().trim(),
   query('gender').optional().isIn(['M', 'F']),
   query('program').optional().trim(),
@@ -103,7 +103,7 @@ router.get('/', [
 // @route   GET /api/students/:id
 // @desc    Get student by ID
 // @access  Private
-router.get('/:id', /* auth, */ async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     
@@ -125,7 +125,7 @@ router.get('/:id', /* auth, */ async (req, res) => {
 // @desc    Create new student
 // @access  Private
 router.post('/', [
-  // auth, // Temporarily removed for testing
+  auth,
   body('studentID').trim().notEmpty().withMessage('Student ID is required'),
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
