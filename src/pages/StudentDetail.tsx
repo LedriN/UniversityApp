@@ -84,55 +84,55 @@ const StudentDetail: React.FC = () => {
     const margin = 25;
     const contentWidth = pageWidth - (margin * 2);
     
-    // Professional header
+    // Professional header with gradient effect
     pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.rect(0, 0, pageWidth, 50, 'F');
+    pdf.rect(0, 0, pageWidth, 60, 'F');
     
     // University name in header
-    pdf.setFontSize(24);
+    pdf.setFontSize(28);
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('UNIVERSITETI PRIVAT', pageWidth / 2, 25, { align: 'center' });
+    pdf.text('UNIVERSITETI PRIVAT', pageWidth / 2, 30, { align: 'center' });
     
     // Subtitle
-    pdf.setFontSize(10);
+    pdf.setFontSize(12);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Universiteti Fama', pageWidth / 2, 35, { align: 'center' });
-    pdf.text('Rruga Selajdin Mullaabazi nr.7', pageWidth / 2, 42, { align: 'center' });
+    pdf.text('Universiteti Fama', pageWidth / 2, 42, { align: 'center' });
+    pdf.text('Rruga Selajdin Mullaabazi nr.7, Prishtinë', pageWidth / 2, 50, { align: 'center' });
     
     // Document title with elegant styling
     pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.setFontSize(18);
+    pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('KARTË E STUDENTIT', pageWidth / 2, 70, { align: 'center' });
+    pdf.text('KARTË E STUDENTIT', pageWidth / 2, 80, { align: 'center' });
     
     // Student name as main heading
-    pdf.setFontSize(16);
+    pdf.setFontSize(18);
     pdf.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-    pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 85, { align: 'center' });
+    pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 95, { align: 'center' });
     
     // Student ID prominently displayed
-    pdf.setFontSize(12);
+    pdf.setFontSize(14);
     pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    pdf.text(`ID-ja e studentit: ${student.studentID}`, pageWidth / 2, 95, { align: 'center' });
+    pdf.text(`ID-ja e studentit: ${student.studentID}`, pageWidth / 2, 105, { align: 'center' });
     
     // Professional information sections
-    let yPos = 110;
+    let yPos = 120;
     
     // Personal Information Section
     pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    pdf.rect(margin, yPos, contentWidth, 60, 'F');
+    pdf.rect(margin, yPos, contentWidth, 100, 'F');
     pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
     pdf.setLineWidth(0.5);
-    pdf.rect(margin, yPos, contentWidth, 60, 'S');
+    pdf.rect(margin, yPos, contentWidth, 100, 'S');
     
-    pdf.setFontSize(14);
+    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     pdf.text('TË DHËNA PERSONALE', margin + 20, yPos + 20);
     
     yPos += 25;
-    pdf.setFontSize(10);
+    pdf.setFontSize(11);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(0, 0, 0);
     
@@ -142,69 +142,42 @@ const StudentDetail: React.FC = () => {
       pdf.text(label + ':', x, yPos);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
-      pdf.text(value, x + 55, yPos);
-      yPos += 8;
+      pdf.text(value, x + 60, yPos);
+      yPos += 10;
     };
     
     addInfoRow('Emri i Plotë', `${student.firstName} ${student.lastName}`);
+    addInfoRow('Emri i Prindit', student.parentName);
     addInfoRow('Gjinia', student.gender === 'M' ? 'Mashkull' : 'Femër');
     addInfoRow('Mosha', `${calculateAge(student.dateOfBirth)} vjeç`);
+    addInfoRow('Data e Lindjes', new Date(student.dateOfBirth).toLocaleDateString('sq-AL'));
     addInfoRow('Telefoni', student.phone);
     addInfoRow('Email', student.email);
+    addInfoRow('Adresa', student.address);
     
     // Academic Information Section
     yPos += 20;
     pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    pdf.rect(margin, yPos, contentWidth, 50, 'F');
+    pdf.rect(margin, yPos, contentWidth, 60, 'F');
     pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-    pdf.rect(margin, yPos, contentWidth, 50, 'S');
+    pdf.rect(margin, yPos, contentWidth, 60, 'S');
     
-    pdf.setFontSize(14);
+    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     pdf.text('TË DHËNA ARSIMORE', margin + 20, yPos + 20);
     
     yPos += 25;
-    pdf.setFontSize(10);
+    pdf.setFontSize(11);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(0, 0, 0);
     
     addInfoRow('Programi', student.program);
     addInfoRow('Viti Akademik', student.academicYear);
     addInfoRow('Shkolla e Mëparshme', student.previousSchool);
-    
-    // Payment Status Section
-    yPos += 15;
-    pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    pdf.rect(margin, yPos, contentWidth, 35, 'F');
-    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-    pdf.rect(margin, yPos, contentWidth, 35, 'S');
-    
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.text('STATUSI I PAGESËS', margin + 15, yPos + 15);
-    
-    yPos += 20;
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(0, 0, 0);
-    
-    const paymentStatus = getPaymentStatus();
-    addInfoRow('Statusi', paymentStatus.label);
-    addInfoRow('Shuma Totale', `€${(student.totalAmount / 100).toLocaleString()}`);
-    addInfoRow('E Paguar', `€${(student.paidAmount / 100).toLocaleString()}`);
-    
-    // Professional footer
-    const footerY = pageHeight - 30;
-    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-    pdf.setLineWidth(1);
-    pdf.line(margin, footerY, pageWidth - margin, footerY);
-    
-    pdf.setFontSize(9);
-    pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    pdf.text(`Dokumenti u gjenerua më: ${new Date().toLocaleDateString('sq-AL')}`, margin, footerY + 8);
-    pdf.text('Universiteti Fama ', pageWidth - margin, footerY + 8, { align: 'right' });
+    if (student.previousSchoolAddress) {
+      addInfoRow('Adresa e Shkollës', student.previousSchoolAddress);
+    }
     
     // Save the PDF
     pdf.save(`Karte_Studentit_${student.firstName}_${student.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
