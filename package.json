@@ -12,7 +12,7 @@
     "dev:full": "concurrently \"npm run dev\" \"cd backend && npm run dev\"",
     "build": "vite build",
     "build:full": "npm run build && npm run copy-build && npm install",
-    "copy-build": "if not exist backend\\public mkdir backend\\public && xcopy /E /I dist backend\\public",
+    "copy-build": "mkdir -p backend/public && cp -r dist/* backend/public/",
     "start": "cd backend && npm start",
     "lint": "eslint .",
     "preview": "vite preview"
