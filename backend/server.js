@@ -43,14 +43,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/lectures', lectureRoutes);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'University Management API is running',
-    timestamp: new Date().toISOString()
-  });
-});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
