@@ -125,6 +125,13 @@ studentSchema.virtual('paymentProgress').get(function() {
   return Math.min(100, (this.paidAmount / this.totalAmount) * 100);
 });
 
+// Virtual for payment records (populated when needed)
+studentSchema.virtual('paymentRecords', {
+  ref: 'PaymentRecord',
+  localField: '_id',
+  foreignField: 'studentId'
+});
+
 // Include virtuals in JSON output
 studentSchema.set('toJSON', { virtuals: true });
 studentSchema.set('toObject', { virtuals: true });

@@ -9,6 +9,7 @@ const studentRoutes = require('./routes/students');
 const userRoutes = require('./routes/users');
 const statsRoutes = require('./routes/stats');
 const lectureRoutes = require('./routes/lectures');
+const paymentRecordRoutes = require('./routes/paymentRecords');
 
 const app = express();
 const PORT = process.env.PORT || 8080; // Digital Ocean expects port 8080
@@ -48,6 +49,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/lectures', lectureRoutes);
+app.use('/api/payment-records', paymentRecordRoutes);
 
 // Serve React app for all non-API routes in production
 if (process.env.NODE_ENV === 'production') {
@@ -56,7 +58,13 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'University Management API is running',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

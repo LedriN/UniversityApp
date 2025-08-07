@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, Calculator } from 'lucide-react';
+import { Save, ArrowLeft, Calculator, Plus, Euro } from 'lucide-react';
 import { useToast } from '../components/ToastContainer';
 import { apiService } from '../services/api';
 import { useAsyncOperation } from '../hooks/useApi';
 import { useApp } from '../context/AppContext';
-import { Student } from '../types';
+import { Student, PaymentRecord } from '../types';
+import PaymentRecordModal from '../components/PaymentRecordModal';
+import PaymentRecordsList from '../components/PaymentRecordsList';
 
 const StudentForm: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +44,9 @@ const StudentForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [student, setStudent] = useState<Student | null>(null);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [loadingPayments, setLoadingPayments] = useState(false);
 
   const programs = [
     'Shkenca Kompjuterike',
@@ -84,6 +89,9 @@ const StudentForm: React.FC = () => {
             totalAmount: result.totalAmount,
             paidAmount: result.paidAmount
           });
+          
+          // Load payment records
+          loadPaymentRecords(id);
         }
         setLoading(false);
       };
@@ -91,6 +99,18 @@ const StudentForm: React.FC = () => {
       loadStudent();
     }
   }, [isEditing, id]);
+
+  const loadPaymentRecords = async (studentId: string) => {
+    try {
+      setLoadingPayments(true);
+      const records = await apiService.getPaymentRecords(studentId);
+      setPaymentRecords(records);
+    } catch (error) {
+      console.error('Error loading payment records:', error);
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -336,6 +356,95 @@ const StudentForm: React.FC = () => {
   const calculateProgress = () => {
     if (formData.totalAmount === 0) return 0;
     return Math.min(100, (formData.paidAmount / formData.totalAmount) * 100);
+  };
+
+  const handleAddPaymentRecord = async (paymentData: {
+    amount: number;
+    paymentDate: string;
+    description?: string;
+    receiptNumber?: string;
+  }) => {
+    if (!id) return;
+    
+    try {
+      const newRecord = await apiService.addPaymentRecord({
+        studentId: id,
+        ...paymentData
+      });
+      
+      // Add to local state
+      setPaymentRecords(prev => [newRecord, ...prev]);
+      
+      // Update student's paid amount
+      setFormData(prev => ({
+        ...prev,
+        paidAmount: prev.paidAmount + paymentData.amount
+      }));
+      
+      // Update student state
+      if (student) {
+        setStudent(prev => prev ? {
+          ...prev,
+          paidAmount: prev.paidAmount + paymentData.amount
+        } : null);
+      }
+      
+      showToast({
+        type: 'success',
+        title: 'Sukses!',
+        message: `Pagesa prej €${paymentData.amount.toLocaleString()} u shtua me sukses!`,
+        duration: 4000
+      });
+    } catch (error: any) {
+      console.error('Error adding payment record:', error);
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: error.response?.data?.message || 'Gabim gjatë shtimit të pagesës',
+        duration: 5000
+      });
+    }
+  };
+
+  const handleDeletePaymentRecord = async (recordId: string) => {
+    try {
+      await apiService.deletePaymentRecord(recordId);
+      
+      // Remove from local state
+      const deletedRecord = paymentRecords.find(record => record.id === recordId);
+      setPaymentRecords(prev => prev.filter(record => record.id !== recordId));
+      
+      if (deletedRecord) {
+        // Update student's paid amount
+        setFormData(prev => ({
+          ...prev,
+          paidAmount: Math.max(0, prev.paidAmount - deletedRecord.amount)
+        }));
+        
+        // Update student state
+        if (student) {
+          setStudent(prev => prev ? {
+            ...prev,
+            paidAmount: Math.max(0, prev.paidAmount - deletedRecord.amount)
+          } : null);
+        }
+      }
+      
+      showToast({
+        type: 'success',
+        title: 'Sukses!',
+        message: 'Pagesa u fshi me sukses!',
+        duration: 4000
+      });
+    } catch (error: any) {
+      console.error('Error deleting payment record:', error);
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: error.response?.data?.message || 'Gabim gjatë fshirjes së pagesës',
+        duration: 5000
+      });
+    }
   };
 
   if (isEditing && loading && !student) {
@@ -653,8 +762,12 @@ const StudentForm: React.FC = () => {
                   errors.paidAmount ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="0"
+                readOnly={isEditing}
               />
               {errors.paidAmount && <p className="mt-1 text-sm text-red-600">{errors.paidAmount}</p>}
+              {isEditing && (
+                <p className="mt-1 text-sm text-gray-500">Shuma e paguar përditësohet automatikisht me pagesat</p>
+              )}
             </div>
           </div>
 
@@ -702,6 +815,31 @@ const StudentForm: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* Payment Records Section - Only show when editing */}
+          {isEditing && (
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-md font-medium text-gray-900">Historiku i Pagesave</h4>
+                {calculateDebt() > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentModal(true)}
+                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Shto Pagesë
+                  </button>
+                )}
+              </div>
+              
+              <PaymentRecordsList
+                paymentRecords={paymentRecords}
+                onDeleteRecord={handleDeletePaymentRecord}
+                loading={loadingPayments}
+              />
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -723,6 +861,18 @@ const StudentForm: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Payment Record Modal */}
+      {isEditing && (
+        <PaymentRecordModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSubmit={handleAddPaymentRecord}
+          studentName={`${formData.firstName} ${formData.lastName}`}
+          remainingDebt={calculateDebt()}
+          loading={loading}
+        />
+      )}
     </div>
   );
 };

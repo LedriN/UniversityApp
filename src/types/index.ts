@@ -19,6 +19,31 @@ export interface Student {
   updatedAt: string;
 }
 
+export interface PaymentRecord {
+  id: string;
+  studentId: string;
+  amount: number;
+  paymentDate: string;
+  description?: string;
+  receiptNumber?: string;
+  recordedBy: {
+    id: string;
+    username: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  formattedPaymentDate?: string;
+}
+
+export interface PaymentStats {
+  totalPaid: number;
+  remainingDebt: number;
+  paymentProgress: number;
+  totalPayments: number;
+  monthlyPayments: Record<string, number>;
+  lastPayment: string | null;
+}
+
 export interface User {
   id: string;
   username: string;

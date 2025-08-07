@@ -47,7 +47,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Check if backend is available
   const checkBackendHealth = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/health`);
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/health`);
       setIsOnline(true);
     } catch {
       setIsOnline(false);

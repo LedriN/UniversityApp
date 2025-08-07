@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { apiConfig, endpoints } from '../config/api';
-import { Student, User, StudentFilters, Lecture } from '../types';
+import { Student, User, StudentFilters, Lecture, PaymentRecord, PaymentStats } from '../types';
 
 class ApiService {
   private api: AxiosInstance;
@@ -132,6 +132,33 @@ class ApiService {
 
   async deleteLecture(id: string): Promise<void> {
     await this.api.delete(endpoints.deleteLecture(id));
+  }
+
+  // Payment Record methods
+  async getPaymentRecords(studentId: string): Promise<PaymentRecord[]> {
+    const response = await this.api.get(`/payment-records/student/${studentId}`);
+    return response.data;
+  }
+
+  async addPaymentRecord(paymentData: {
+    studentId: string;
+    amount: number;
+    paymentDate?: string;
+    paymentMethod?: 'cash' | 'bank_transfer' | 'card' | 'other';
+    description?: string;
+    receiptNumber?: string;
+  }): Promise<PaymentRecord> {
+    const response = await this.api.post('/payment-records', paymentData);
+    return response.data;
+  }
+
+  async deletePaymentRecord(id: string): Promise<void> {
+    await this.api.delete(`/payment-records/${id}`);
+  }
+
+  async getPaymentStats(studentId: string): Promise<PaymentStats> {
+    const response = await this.api.get(`/payment-records/student/${studentId}/stats`);
+    return response.data;
   }
 }
 

@@ -4,7 +4,9 @@ import {
   Calendar,
   BookOpen,
   DollarSign,
-  Bell
+  Bell,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
@@ -74,6 +76,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ children }) => {
 
 // Dashboard Content Component
 const StudentDashboardContent: React.FC<{ student: Student }> = ({ student }) => {
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  
   const calculateDebt = () => {
     return Math.max(0, student.totalAmount - student.paidAmount);
   };
@@ -150,28 +154,42 @@ const StudentDashboardContent: React.FC<{ student: Student }> = ({ student }) =>
         </div>
       </div>
 
-      {/* Payment Progress */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Progresi i Pagesës</h3>
-        <div className="space-y-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shuma e paguar: €{student.paidAmount.toLocaleString()}</span>
-            <span className="text-gray-600">{calculateProgress().toFixed(1)}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div
-              className={`h-3 rounded-full transition-all duration-300 ${
-                calculateProgress() === 100 ? 'bg-green-500' : 'bg-blue-500'
-              }`}
-              style={{ width: `${calculateProgress()}%` }}
-            ></div>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Statusi: {student.paidAmount >= student.totalAmount ? 'I Paguar' : 'Me Borxh'}</span>
-            <span className="text-gray-600">Mbetet: €{calculateDebt().toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
+             {/* Payment Progress Accordion */}
+       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+         <button
+           onClick={() => setIsPaymentOpen(!isPaymentOpen)}
+           className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-all duration-200"
+         >
+           <h3 className="text-lg font-medium text-gray-900">Progresi i Pagesës</h3>
+           <div className={`transition-transform duration-200 ${isPaymentOpen ? 'rotate-180' : 'rotate-0'}`}>
+             <ChevronDown className="h-5 w-5 text-gray-500" />
+           </div>
+         </button>
+         <div 
+           className={`transition-all duration-300 ease-in-out overflow-hidden ${
+             isPaymentOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+           }`}
+         >
+           <div className="px-6 pb-6 space-y-4 border-t border-gray-100">
+             <div className="flex justify-between text-sm">
+               <span className="text-gray-600">Shuma e paguar: €{student.paidAmount.toLocaleString()}</span>
+               <span className="text-gray-600">{calculateProgress().toFixed(1)}%</span>
+             </div>
+             <div className="w-full bg-gray-200 rounded-full h-3">
+               <div
+                 className={`h-3 rounded-full transition-all duration-300 ${
+                   calculateProgress() === 100 ? 'bg-green-500' : 'bg-blue-500'
+                 }`}
+                 style={{ width: `${calculateProgress()}%` }}
+               ></div>
+             </div>
+             <div className="flex justify-between text-sm">
+               <span className="text-gray-600">Statusi: {student.paidAmount >= student.totalAmount ? 'I Paguar' : 'Me Borxh'}</span>
+               <span className="text-gray-600">Mbetet: €{calculateDebt().toLocaleString()}</span>
+             </div>
+           </div>
+         </div>
+       </div>
 
       {/* Personal Information */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
