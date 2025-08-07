@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 // Generate a random password
 const generatePassword = () => {
-  return crypto.randomBytes(8).toString('hex');
+  return crypto.randomBytes(4).toString('hex');
 };
 
 // Create transporter
