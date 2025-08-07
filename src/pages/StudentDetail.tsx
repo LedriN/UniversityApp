@@ -71,113 +71,154 @@ const StudentDetail: React.FC = () => {
   const exportToPDF = async () => {
     const pdf = new jsPDF();
     
-    // Professional color scheme
-    const primaryColor = [31, 41, 55]; // Dark gray
-    const secondaryColor = [107, 114, 128]; // Gray-500
-    const accentColor = [59, 130, 246]; // Blue-600
-    const lightGray = [249, 250, 251]; // Gray-50
-    const borderColor = [229, 231, 235]; // Gray-200
-    
     // Page dimensions
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 25;
+    const margin = 20;
     const contentWidth = pageWidth - (margin * 2);
     
-    // Professional header with gradient effect
-    pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.rect(0, 0, pageWidth, 60, 'F');
+    // Add FAMA logo from local assets
+    try {
+      const logoPath = '/assets/logo.png'; // Local PNG image from public/assets/
+      const response = await fetch(logoPath);
+      const imageBlob = await response.blob();
+      const imageArrayBuffer = await imageBlob.arrayBuffer();
+      const imageBase64 = btoa(String.fromCharCode(...new Uint8Array(imageArrayBuffer)));
+      
+      // Calculate logo dimensions to maintain aspect ratio (assuming 1:1 aspect ratio)
+      const logoSize = 25; // Fixed size to prevent stretching
+      
+      // Add logo to top left
+      pdf.addImage(`data:image/png;base64,${imageBase64}`, 'PNG', margin, 15, logoSize, logoSize);
+      
+      // Add logo to top right
+      pdf.addImage(`data:image/png;base64,${imageBase64}`, 'PNG', pageWidth - margin - logoSize, 15, logoSize, logoSize);
+    } catch (error) {
+      console.warn('Could not load logo from local assets, using fallback:', error);
+      // Fallback to simple text-based logo
+      const logoBase64 = 'data:image/svg+xml;base64,' + btoa(`
+        <svg width="100" height="80" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="80" fill="#f8f9fa" stroke="#000" stroke-width="1"/>
+          <text x="50" y="25" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#000">FAMA</text>
+          <text x="50" y="45" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#666">INTERNATIONAL</text>
+          <text x="50" y="60" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#666">COLLEGE</text>
+        </svg>
+      `);
+      
+      // Add fallback logo on left side
+      pdf.addImage(logoBase64, 'SVG', margin, 15, 25, 20);
+      // Add fallback logo on right side
+      pdf.addImage(logoBase64, 'SVG', pageWidth - margin - 25, 15, 25, 20);
+    }
     
-    // University name in header
-    pdf.setFontSize(28);
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('UNIVERSITETI PRIVAT', pageWidth / 2, 30, { align: 'center' });
-    
-    // Subtitle
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('Universiteti Fama', pageWidth / 2, 42, { align: 'center' });
-    pdf.text('Rruga Selajdin Mullaabazi nr.7, Prishtinë', pageWidth / 2, 50, { align: 'center' });
-    
-    // Document title with elegant styling
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.setFontSize(20);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('KARTË E STUDENTIT', pageWidth / 2, 80, { align: 'center' });
-    
-    // Student name as main heading
-    pdf.setFontSize(18);
-    pdf.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-    pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 95, { align: 'center' });
-    
-    // Student ID prominently displayed
+        // Header with college name
     pdf.setFontSize(14);
-    pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    pdf.text(`ID-ja e studentit: ${student.studentID}`, pageWidth / 2, 105, { align: 'center' });
-    
-    // Professional information sections
-    let yPos = 120;
-    
-    // Personal Information Section
-    pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    pdf.rect(margin, yPos, contentWidth, 100, 'F');
-    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-    pdf.setLineWidth(0.5);
-    pdf.rect(margin, yPos, contentWidth, 100, 'S');
-    
-    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.text('TË DHËNA PERSONALE', margin + 20, yPos + 20);
-    
-    yPos += 25;
-    pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(0, 0, 0);
     
-    const addInfoRow = (label: string, value: string, x: number = margin + 20) => {
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      pdf.text(label + ':', x, yPos);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(value, x + 60, yPos);
-      yPos += 10;
-    };
+    // College name centered
+    pdf.text('KOLEGJI INTERNACIONAL FAMA', pageWidth / 2, 20, { align: 'center' });
+    pdf.text('FAMA INTERNATIONAL COLLEGE', pageWidth / 2, 26, { align: 'center' });
+    
+    // Ministry info
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Republika e Kosovës / Ministria e Arsimit, Shkencës dhe Teknologjisë', pageWidth / 2, 34, { align: 'center' });
+    pdf.text('Nr I Akreditimit (010/25)', pageWidth / 2, 40, { align: 'center' });
+
+     pdf.setFontSize(7);
+     pdf.setFont('helvetica', 'bold');
+     pdf.text('Kolegji Internacional Fama', margin + 25, 50);
+     pdf.setFont('helvetica', 'normal');
+     pdf.text('Rruga Selajdin Mulla Abazi nr.7,', margin + 5, 56);
+     pdf.text('Prishtinë', margin + 5, 61);
+     pdf.text('Tel: +383 44622127', margin + 5, 66);
+     pdf.text('info@fama-edu.org', margin + 5, 71);
+     pdf.text('www.fama-edu.org', margin + 5, 76);
+     
+     // Student ID (top-right)
+     pdf.setFontSize(7);
+     pdf.setFont('helvetica', 'bold');
+     pdf.text(`ID ${student.studentID}`, pageWidth - margin - 5, 52, { align: 'right' });
+     
+     // Main title
+     pdf.setFontSize(20);
+     pdf.setFont('helvetica', 'bold');
+     pdf.text('VËRTETIM', pageWidth / 2, 95, { align: 'center' });
+     
+     // Student name in blue
+     pdf.setFontSize(16);
+     pdf.setTextColor(0, 0, 255);
+     pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 108, { align: 'center' });
+     
+     let yPos = 120;
+     
+     // Personal Data Section
+     pdf.setFontSize(12);
+     pdf.setFont('helvetica', 'bold');
+     pdf.setTextColor(0, 0, 0);
+     pdf.text('TË DHËNA PERSONALE', margin + 10, yPos);
+     
+     yPos += 12;
+     pdf.setFontSize(9);
+     pdf.setFont('helvetica', 'normal');
+     
+     const addInfoRow = (label: string, value: string, x: number = margin + 10) => {
+       pdf.setFont('helvetica', 'bold');
+       pdf.text(label + ':', x, yPos);
+       pdf.setFont('helvetica', 'normal');
+       pdf.text(value, x + 50, yPos);
+       yPos += 7;
+     };
     
     addInfoRow('Emri i Plotë', `${student.firstName} ${student.lastName}`);
     addInfoRow('Emri i Prindit', student.parentName);
     addInfoRow('Gjinia', student.gender === 'M' ? 'Mashkull' : 'Femër');
     addInfoRow('Mosha', `${calculateAge(student.dateOfBirth)} vjeç`);
-    addInfoRow('Data e Lindjes', new Date(student.dateOfBirth).toLocaleDateString('sq-AL'));
+    addInfoRow('Data e Lindjes', new Date(student.dateOfBirth).toLocaleDateString('en-GB'));
     addInfoRow('Telefoni', student.phone);
     addInfoRow('Email', student.email);
     addInfoRow('Adresa', student.address);
     
-    // Academic Information Section
-    yPos += 20;
-    pdf.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    pdf.rect(margin, yPos, contentWidth, 60, 'F');
-    pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-    pdf.rect(margin, yPos, contentWidth, 60, 'S');
-    
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.text('TË DHËNA ARSIMORE', margin + 20, yPos + 20);
-    
-    yPos += 25;
-    pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(0, 0, 0);
-    
-    addInfoRow('Programi', student.program);
-    addInfoRow('Viti Akademik', student.academicYear);
-    addInfoRow('Shkolla e Mëparshme', student.previousSchool);
-    if (student.previousSchoolAddress) {
-      addInfoRow('Adresa e Shkollës', student.previousSchoolAddress);
-    }
+         // Educational Data Section
+     yPos += 8;
+     pdf.setFontSize(12);
+     pdf.setFont('helvetica', 'bold');
+     pdf.text('TË DHËNA ARSIMORE', margin + 10, yPos);
+     
+     yPos += 12;
+     pdf.setFontSize(9);
+     pdf.setFont('helvetica', 'normal');
+     
+     addInfoRow('Programi', student.program);
+     addInfoRow('Viti Akademik', student.academicYear);
+     addInfoRow('Forma e studimeve', 'E rregullt');
+     addInfoRow('Shkolla e Mëparshme', student.previousSchool);
+     addInfoRow('Adresa e Shkollës', student.previousSchoolAddress || '');
+     
+     // Footer
+     yPos += 15;
+     pdf.setFontSize(9);
+     pdf.setFont('helvetica', 'normal');
+     
+     // Get current date in DD.MM.YYYY format
+     const currentDate = new Date();
+     const day = currentDate.getDate().toString().padStart(2, '0');
+     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+     const year = currentDate.getFullYear();
+     const formattedDate = `${day}.${month}.${year}`;
+     
+     pdf.text('Data e lëshimit: ' + formattedDate, margin + 10, yPos);
+     pdf.text('Prishtinë', pageWidth / 2, yPos, { align: 'center' });
+     
+     yPos += 12;
+     pdf.text('Sekretari Akademik ose Dekani', pageWidth / 2, yPos, { align: 'center' });
+     
+     // Signature line
+     yPos += 8;
+     pdf.setDrawColor(0, 0, 0);
+     pdf.setLineWidth(0.5);
+     pdf.line(pageWidth / 2 - 50, yPos, pageWidth / 2 + 50, yPos);
     
     // Save the PDF
     pdf.save(`Karte_Studentit_${student.firstName}_${student.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
