@@ -50,9 +50,9 @@ const StudentForm: React.FC = () => {
 
   const programs = [
     'Shkenca Kompjuterike',
-    'Ekonomi e Përgjithshme',
-    'Juridik i Përgjithshëm',
-    'Përkujdesje dhe Mirëqenie Sociale',
+    'Ekonomi e Pergjithshme',
+    'Juridik i Pergjithshem',
+    'Perkujdesje dhe Mireqenie Sociale',
   ];
 
   // Generate student ID when creating a new student
@@ -115,29 +115,29 @@ const StudentForm: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.studentID.trim()) newErrors.studentID = 'ID-ja e studentit është e detyrueshme';
-    if (!formData.firstName.trim()) newErrors.firstName = 'Emri është i detyrueshëm';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Mbiemri është i detyrueshëm';
-    if (!formData.parentName.trim()) newErrors.parentName = 'Emri i prindit është i detyrueshëm';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Data e lindjes është e detyrueshme';
-    if (!formData.address.trim()) newErrors.address = 'Adresa është e detyrueshme';
-    if (!formData.phone.trim()) newErrors.phone = 'Numri i telefonit është i detyrueshëm';
-    if (!formData.email.trim()) newErrors.email = 'Email-i është i detyrueshëm';
-    if (!formData.program) newErrors.program = 'Programi është i detyrueshëm';
-    if (formData.totalAmount <= 0) newErrors.totalAmount = 'Shuma totale duhet të jetë më e madhe se 0';
-    if (formData.paidAmount < 0) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë negative';
-    if (formData.paidAmount > formData.totalAmount) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë më e madhe se totali';
+    if (!formData.studentID.trim()) newErrors.studentID = 'ID-ja e studentit eshte e detyrueshme';
+    if (!formData.firstName.trim()) newErrors.firstName = 'Emri eshte i detyrueshem';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Mbiemri eshte i detyrueshem';
+    if (!formData.parentName.trim()) newErrors.parentName = 'Emri i prindit eshte i detyrueshem';
+    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Data e lindjes eshte e detyrueshme';
+    if (!formData.address.trim()) newErrors.address = 'Adresa eshte e detyrueshme';
+    if (!formData.phone.trim()) newErrors.phone = 'Numri i telefonit eshte i detyrueshem';
+    if (!formData.email.trim()) newErrors.email = 'Email-i eshte i detyrueshem';
+    if (!formData.program) newErrors.program = 'Programi eshte i detyrueshem';
+    if (formData.totalAmount <= 0) newErrors.totalAmount = 'Shuma totale duhet te jete me e madhe se 0';
+    if (formData.paidAmount < 0) newErrors.paidAmount = 'Shuma e paguar nuk mund te jete negative';
+    if (formData.paidAmount > formData.totalAmount) newErrors.paidAmount = 'Shuma e paguar nuk mund te jete me e madhe se totali';
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Format i pavlefshëm email-i';
+      newErrors.email = 'Format i pavlefshem email-i';
     }
 
     // Phone validation
     const phoneRegex = /^(\+355|0)[0-9]{8,9}$/;
     if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Format i pavlefshëm i numrit të telefonit';
+      newErrors.phone = 'Format i pavlefshem i numrit te telefonit';
     }
 
     setErrors(newErrors);
@@ -159,7 +159,7 @@ const StudentForm: React.FC = () => {
           (!isEditing || s.id !== id)
         );
         if (existingEmail) {
-          newErrors.email = 'Email-i tashmë ekziston në sistem, ju lutem provoni me një email tjetër';
+          newErrors.email = 'Email-i tashme ekziston ne sistem, ju lutem provoni me nje email tjeter';
         } else {
           delete newErrors.email;
         }
@@ -172,7 +172,7 @@ const StudentForm: React.FC = () => {
           (!isEditing || s.id !== id)
         );
         if (existingPhone) {
-          newErrors.phone = 'Numri i telefonit tashmë ekziston në sistem';
+          newErrors.phone = 'Numri i telefonit tashme ekziston ne sistem';
         } else {
           delete newErrors.phone;
         }
@@ -206,7 +206,7 @@ const StudentForm: React.FC = () => {
         showToast({
           type: 'success',
           title: 'Sukses!',
-          message: 'Studenti u përditësua me sukses!',
+          message: 'Studenti u perditesua me sukses!',
           duration: 4000
         });
         navigate('/students');
@@ -224,10 +224,10 @@ const StudentForm: React.FC = () => {
               <div><strong>👤 Username:</strong> {username}</div>
               <div><strong>📧 Email:</strong> {formData.email}</div>
                              <div className="text-green-600 font-medium">
-                 ✅ Fjalëkalimi u gjenerua dhe u dërgua në email-in e studentit.
+                 ✅ Fjalekalimi u gjenerua dhe u dergua ne email-in e studentit.
                </div>
                <div className="text-orange-600 text-sm">
-                 💡 Kontrolloni email-in e studentit për kredencialet e hyrjes.
+                 💡 Kontrolloni email-in e studentit per kredencialet e hyrjes.
                </div>
             </div>
           ),
@@ -256,7 +256,7 @@ const StudentForm: React.FC = () => {
         });
       } else {
         // Handle general errors
-        const errorMessage = error.response?.data?.message || 'Gabim gjatë ruajtjes së studentit. Ju lutemi provoni përsëri.';
+        const errorMessage = error.response?.data?.message || 'Gabim gjate ruajtjes se studentit. Ju lutemi provoni perseri.';
         showToast({
           type: 'error',
           title: 'Gabim!',
@@ -323,7 +323,7 @@ const StudentForm: React.FC = () => {
                 (!isEditing || s.id !== id)
               );
               if (existingEmail) {
-                newErrors.email = 'Email-i tashmë ekziston në sistem, ju lutem provoni me një email tjetër';
+                newErrors.email = 'Email-i tashme ekziston ne sistem, ju lutem provoni me nje email tjeter';
               } else {
                 delete newErrors.email;
               }
@@ -333,7 +333,7 @@ const StudentForm: React.FC = () => {
                 (!isEditing || s.id !== id)
               );
               if (existingPhone) {
-                newErrors.phone = 'Numri i telefonit tashmë ekziston në sistem';
+                newErrors.phone = 'Numri i telefonit tashme ekziston ne sistem';
               } else {
                 delete newErrors.phone;
               }
@@ -400,7 +400,7 @@ const StudentForm: React.FC = () => {
       showToast({
         type: 'error',
         title: 'Gabim!',
-        message: error.response?.data?.message || 'Gabim gjatë shtimit të pagesës',
+        message: error.response?.data?.message || 'Gabim gjate shtimit te pageses',
         duration: 5000
       });
     }
@@ -441,7 +441,7 @@ const StudentForm: React.FC = () => {
       showToast({
         type: 'error',
         title: 'Gabim!',
-        message: error.response?.data?.message || 'Gabim gjatë fshirjes së pagesës',
+        message: error.response?.data?.message || 'Gabim gjate fshirjes se pageses',
         duration: 5000
       });
     }
@@ -451,7 +451,7 @@ const StudentForm: React.FC = () => {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Duke ngarkuar të dhënat e studentit...</span>
+        <span className="ml-2 text-gray-600">Duke ngarkuar te dhenat e studentit...</span>
       </div>
     );
   }
@@ -466,7 +466,7 @@ const StudentForm: React.FC = () => {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-3xl font-bold text-gray-900">
-          {isEditing ? 'Modifiko Studentin' : 'Shto Student të Ri'}
+          {isEditing ? 'Modifiko Studentin' : 'Shto Student te Ri'}
         </h1>
       </div>
 
@@ -481,11 +481,11 @@ const StudentForm: React.FC = () => {
              </div>
              <div className="ml-3">
                <h3 className="text-sm font-medium text-blue-800">
-                 Automatike: Krijimi i llogarisë së përdoruesit
+                 Automatike: Krijimi i llogarise se perdoruesit
                </h3>
                <div className="mt-2 text-sm text-blue-700">
-                 <p>Kur krijoni një student të ri, do të krijohet automatikisht një llogari përdoruesi dhe fjalëkalimi do të dërgohet në email-in e studentit.</p>
-                 <p className="mt-1"><strong>Shënim:</strong> Email-i dhe numri i telefonit duhet të jenë unikë në sistem.</p>
+                 <p>Kur krijoni nje student te ri, do te krijohet automatikisht nje llogari perdoruesi dhe fjalekalimi do te dergohet ne email-in e studentit.</p>
+                 <p className="mt-1"><strong>Shenim:</strong> Email-i dhe numri i telefonit duhet te jene unike ne sistem.</p>
                </div>
              </div>
            </div>
@@ -522,7 +522,7 @@ const StudentForm: React.FC = () => {
 
          {/* Personal Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Personale</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Te Dhena Personale</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <div>
@@ -617,7 +617,7 @@ const StudentForm: React.FC = () => {
                 maxLength={15}
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-              <p className="mt-1 text-xs text-gray-500">Vetëm numra, hapësira dhe simboli +</p>
+              <p className="mt-1 text-xs text-gray-500">Vetem numra, hapesira dhe simboli +</p>
             </div>
 
             <div className="sm:col-span-2">
@@ -659,32 +659,32 @@ const StudentForm: React.FC = () => {
 
         {/* Education Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Arsimore</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Te Dhena Arsimore</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shkolla e Mëparshme
+                Shkolla e Meparshme
               </label>
               <input
                 type="text"
                 value={formData.previousSchool}
                 onChange={(e) => handleInputChange('previousSchool', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Emri i shkollës së mëparshme"
+                placeholder="Emri i shkolles se meparshme"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Adresa e Shkollës së Mëparshme
+                Adresa e Shkolles se Meparshme
               </label>
               <input
                 type="text"
                 value={formData.previousSchoolAddress}
                 onChange={(e) => handleInputChange('previousSchoolAddress', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Lokacioni i shkollës"
+                placeholder="Lokacioni i shkolles"
               />
             </div>
 
@@ -726,7 +726,7 @@ const StudentForm: React.FC = () => {
 
         {/* Financial Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Të Dhëna Financiare</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Te Dhena Financiare</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
             <div>
@@ -766,7 +766,7 @@ const StudentForm: React.FC = () => {
               />
               {errors.paidAmount && <p className="mt-1 text-sm text-red-600">{errors.paidAmount}</p>}
               {isEditing && (
-                <p className="mt-1 text-sm text-gray-500">Shuma e paguar përditësohet automatikisht me pagesat</p>
+                <p className="mt-1 text-sm text-gray-500">Shuma e paguar perditesohet automatikisht me pagesat</p>
               )}
             </div>
           </div>
@@ -780,25 +780,25 @@ const StudentForm: React.FC = () => {
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600">Borxhi i mbetur:</span>
-                  <span className="ml-2 font-medium text-red-600">
-                    €{calculateDebt().toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Progresi i pagesës:</span>
-                  <span className="ml-2 font-medium text-blue-600">
-                    {calculateProgress().toFixed(1)}%
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Statusi:</span>
-                  <span className={`ml-2 font-medium ${
-                    formData.paidAmount >= formData.totalAmount ? 'text-green-600' : 'text-orange-600'
-                  }`}>
-                    {formData.paidAmount >= formData.totalAmount ? 'I Paguar' : 'Me Borxh'}
-                  </span>
-                </div>
+                                  <span className="text-gray-600">Borxhi i mbetur:</span>
+                <span className="ml-2 font-medium text-red-600">
+                  €{calculateDebt().toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600">Progresi i pageses:</span>
+                <span className="ml-2 font-medium text-blue-600">
+                  {calculateProgress().toFixed(1)}%
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-600">Statusi:</span>
+                <span className={`ml-2 font-medium ${
+                  formData.paidAmount >= formData.totalAmount ? 'text-green-600' : 'text-orange-600'
+                }`}>
+                  {formData.paidAmount >= formData.totalAmount ? 'I Paguar' : 'Me Borxh'}
+                </span>
+              </div>
               </div>
 
               {formData.totalAmount > 0 && (
@@ -828,7 +828,7 @@ const StudentForm: React.FC = () => {
                     className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Shto Pagesë
+                    Shto Pagese
                   </button>
                 )}
               </div>

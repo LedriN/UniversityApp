@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
       {loading && (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">Duke ngarkuar të dhënat...</span>
+          <span className="ml-2 text-gray-600">Duke ngarkuar te dhenat...</span>
         </div>
       )}
 
@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
               <Users className="h-8 w-8 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Totali Studentë</p>
+              <p className="text-sm font-medium text-gray-500">Totali Studente</p>
               <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
             </div>
           </div>
@@ -94,7 +94,7 @@ const Dashboard: React.FC = () => {
               <CreditCard className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Studentë të Paguar</p>
+              <p className="text-sm font-medium text-gray-500">Studente te Paguar</p>
               <p className="text-2xl font-semibold text-gray-900">{stats.paidStudents}</p>
             </div>
           </div>
@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
               <TrendingUp className="h-8 w-8 text-indigo-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Të Ardhura</p>
+              <p className="text-sm font-medium text-gray-500">Te Ardhura</p>
               <p className="text-2xl font-semibold text-gray-900">€{stats.totalRevenue.toLocaleString()}</p>
             </div>
           </div>
@@ -130,7 +130,7 @@ const Dashboard: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Studentë të Fundit</h3>
+              <h3 className="text-lg font-medium text-gray-900">Studente te Fundit</h3>
               <Link
                 to="/admin/students"
                 className="text-sm text-blue-600 hover:text-blue-800 font-medium"

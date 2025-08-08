@@ -77,9 +77,9 @@ const studentSchema = new mongoose.Schema({
     required: [true, 'Program is required'],
     enum: [
       'Shkenca Kompjuterike',
-      'Ekonomi e Përgjithshme',
-      'Juridik i Përgjithshëm',
-      'Përkujdesje dhe Mirëqenie Sociale'
+      'Ekonomi e Pergjithshme',
+      'Juridik i Pergjithshem',
+      'Perkujdesje dhe Mireqenie Sociale'
     ]
   },
   academicYear: {
