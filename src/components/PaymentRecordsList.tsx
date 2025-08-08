@@ -77,7 +77,7 @@ const PaymentRecordsList: React.FC<PaymentRecordsListProps> = ({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paymentRecords.map((record) => (
-                <tr key={record.id} className="hover:bg-gray-50">
+                <tr key={record.id} className={`hover:bg-gray-50 ${record.id === 'initial-payment' ? 'bg-blue-50' : ''}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 text-gray-400 mr-2" />
@@ -118,13 +118,17 @@ const PaymentRecordsList: React.FC<PaymentRecordsListProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => onDeleteRecord(record.id)}
-                      className="text-red-600 hover:text-red-900 transition-colors"
-                      title="Fshi pagesën"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {record.id === 'initial-payment' ? (
+                      <span className="text-gray-400 text-xs">Pagesa fillestare</span>
+                    ) : (
+                      <button
+                        onClick={() => onDeleteRecord(record.id)}
+                        className="text-red-600 hover:text-red-900 transition-colors"
+                        title="Fshi pagesën"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

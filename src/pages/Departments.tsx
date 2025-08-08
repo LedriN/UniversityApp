@@ -15,9 +15,9 @@ const Departments: React.FC = () => {
   // Define all available programs
   const allPrograms = [
     'Shkenca Kompjuterike',
-    'Ekonomi e Përgjithshme',
-    'Juridik i Përgjithshëm',
-    'Përkujdesje dhe Mirëqenie Sociale'
+    'Ekonomi e Pergjithshme',
+    'Juridik i Pergjithshem',
+    'Perkujdesje dhe Mireqenie Sociale'
   ];
 
   // Group students by program

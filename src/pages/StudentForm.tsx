@@ -104,7 +104,32 @@ const StudentForm: React.FC = () => {
     try {
       setLoadingPayments(true);
       const records = await apiService.getPaymentRecords(studentId);
-      setPaymentRecords(records);
+      
+      // If student has paid amount but no payment records, create a virtual initial payment record
+      if (student && student.paidAmount > 0 && records.length === 0) {
+        const initialPaymentRecord: PaymentRecord = {
+          id: 'initial-payment',
+          studentId: studentId,
+          amount: student.paidAmount,
+          paymentDate: student.createdAt,
+          description: 'Pagesa fillestare',
+          receiptNumber: 'INITIAL',
+          recordedBy: {
+            id: 'system',
+            username: 'Sistemi'
+          },
+          createdAt: student.createdAt,
+          updatedAt: student.createdAt,
+          formattedPaymentDate: new Date(student.createdAt).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+        };
+        setPaymentRecords([initialPaymentRecord]);
+      } else {
+        setPaymentRecords(records);
+      }
     } catch (error) {
       console.error('Error loading payment records:', error);
     } finally {
@@ -115,29 +140,50 @@ const StudentForm: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.studentID.trim()) newErrors.studentID = 'ID-ja e studentit eshte e detyrueshme';
-    if (!formData.firstName.trim()) newErrors.firstName = 'Emri eshte i detyrueshem';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Mbiemri eshte i detyrueshem';
-    if (!formData.parentName.trim()) newErrors.parentName = 'Emri i prindit eshte i detyrueshem';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Data e lindjes eshte e detyrueshme';
-    if (!formData.address.trim()) newErrors.address = 'Adresa eshte e detyrueshme';
-    if (!formData.phone.trim()) newErrors.phone = 'Numri i telefonit eshte i detyrueshem';
-    if (!formData.email.trim()) newErrors.email = 'Email-i eshte i detyrueshem';
-    if (!formData.program) newErrors.program = 'Programi eshte i detyrueshem';
-    if (formData.totalAmount <= 0) newErrors.totalAmount = 'Shuma totale duhet te jete me e madhe se 0';
-    if (formData.paidAmount < 0) newErrors.paidAmount = 'Shuma e paguar nuk mund te jete negative';
-    if (formData.paidAmount > formData.totalAmount) newErrors.paidAmount = 'Shuma e paguar nuk mund te jete me e madhe se totali';
+         // Required field validations
+     if (!formData.studentID.trim()) newErrors.studentID = 'ID-ja e studentit është e detyrueshme';
+     if (!formData.firstName.trim()) newErrors.firstName = 'Emri është i detyrueshëm';
+     if (!formData.lastName.trim()) newErrors.lastName = 'Mbiemri është i detyrueshëm';
+     if (!formData.parentName.trim()) newErrors.parentName = 'Emri i prindit është i detyrueshëm';
+     if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Data e lindjes është e detyrueshme';
+     if (!formData.address.trim()) newErrors.address = 'Adresa është e detyrueshme';
+     if (!formData.phone.trim()) newErrors.phone = 'Numri i telefonit është i detyrueshëm';
+     if (!formData.email.trim()) newErrors.email = 'Email-i është i detyrueshëm';
+     if (!formData.program || formData.program === '' || formData.program === 'Zgjidh programin') newErrors.program = 'Zgjedh programin';
+    
+    // Financial validations
+    if (formData.totalAmount <= 0) newErrors.totalAmount = 'Shuma totale duhet të jetë më e madhe se 0';
+    if (formData.paidAmount < 0) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë negative';
+    if (formData.paidAmount > formData.totalAmount) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë më e madhe se totali';
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Format i pavlefshem email-i';
+      newErrors.email = 'Format i pavlefshëm email-i';
     }
 
     // Phone validation
     const phoneRegex = /^(\+355|0)[0-9]{8,9}$/;
     if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Format i pavlefshem i numrit te telefonit';
+      newErrors.phone = 'Format i pavlefshëm i numrit të telefonit';
+    }
+
+    // Date validation
+    if (formData.dateOfBirth) {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      
+      if (birthDate > today) {
+        newErrors.dateOfBirth = 'Data e lindjes nuk mund të jetë në të ardhmen';
+      } else if (age < 15 || age > 100) {
+        newErrors.dateOfBirth = 'Mosha duhet të jetë mes 15 dhe 100 vjetësh';
+      }
+    }
+
+    // Student ID validation
+    if (formData.studentID && !/^\d{10}$/.test(formData.studentID)) {
+      newErrors.studentID = 'ID-ja e studentit duhet të ketë saktësisht 10 shifra';
     }
 
     setErrors(newErrors);
@@ -274,6 +320,17 @@ const StudentForm: React.FC = () => {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+    
+    // Real-time validation for program field
+    if (field === 'program') {
+      const newErrors = { ...errors };
+      if (!value || value === '' || value === 'Zgjidh programin') {
+        newErrors.program = 'Zgjedh programin';
+      } else {
+        delete newErrors.program;
+      }
+      setErrors(newErrors);
+    }
   };
 
   // Handle phone number input - only allow numbers and specific characters
@@ -358,6 +415,44 @@ const StudentForm: React.FC = () => {
     return Math.min(100, (formData.paidAmount / formData.totalAmount) * 100);
   };
 
+  // Helper function to get field validation status
+  const getFieldStatus = (fieldName: string) => {
+    const hasError = errors[fieldName];
+    const hasValue = formData[fieldName as keyof typeof formData];
+    
+    if (hasError) return 'error';
+    if (hasValue && typeof hasValue === 'string' && hasValue.trim() !== '') return 'success';
+    if (hasValue && typeof hasValue === 'number' && hasValue > 0) return 'success';
+    return 'default';
+  };
+
+  // Helper function to get field border color
+  const getFieldBorderColor = (fieldName: string) => {
+    const status = getFieldStatus(fieldName);
+    switch (status) {
+      case 'error': return 'border-red-300 focus:border-red-500 focus:ring-red-500';
+      default: return 'border-gray-300 focus:border-blue-500 focus:ring-blue-500';
+    }
+  };
+
+  // Helper function to get field label for error messages
+  const getFieldLabel = (fieldName: string) => {
+    const labels: Record<string, string> = {
+      studentID: 'ID e Studentit',
+      firstName: 'Emri',
+      lastName: 'Mbiemri',
+      parentName: 'Emri i Prindit',
+      dateOfBirth: 'Data e Lindjes',
+      address: 'Adresa',
+      phone: 'Numri i Telefonit',
+      email: 'Email',
+      program: 'Programi',
+      totalAmount: 'Shuma Totale',
+      paidAmount: 'Shuma e Paguar'
+    };
+    return labels[fieldName] || fieldName;
+  };
+
   const handleAddPaymentRecord = async (paymentData: {
     amount: number;
     paymentDate: string;
@@ -407,6 +502,17 @@ const StudentForm: React.FC = () => {
   };
 
   const handleDeletePaymentRecord = async (recordId: string) => {
+    // Don't allow deletion of initial payment record
+    if (recordId === 'initial-payment') {
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Pagesa fillestare nuk mund të fshihet',
+        duration: 4000
+      });
+      return;
+    }
+
     try {
       await apiService.deletePaymentRecord(recordId);
       
@@ -481,11 +587,38 @@ const StudentForm: React.FC = () => {
              </div>
              <div className="ml-3">
                <h3 className="text-sm font-medium text-blue-800">
-                 Automatike: Krijimi i llogarise se perdoruesit
+                 Automatike: Krijimi i llogarisë së përdoruesit
                </h3>
                <div className="mt-2 text-sm text-blue-700">
-                 <p>Kur krijoni nje student te ri, do te krijohet automatikisht nje llogari perdoruesi dhe fjalekalimi do te dergohet ne email-in e studentit.</p>
-                 <p className="mt-1"><strong>Shenim:</strong> Email-i dhe numri i telefonit duhet te jene unike ne sistem.</p>
+                 <p>Kur krijoni një student të ri, do të krijohet automatikisht një llogari përdoruesi dhe fjalëkalimi do të dërgohet në email-in e studentit.</p>
+                 <p className="mt-1"><strong>Shënim:</strong> Email-i dhe numri i telefonit duhet të jenë unike në sistem.</p>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* Validation Summary */}
+       {Object.keys(errors).length > 0 && (
+         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+           <div className="flex items-start">
+             <div className="flex-shrink-0">
+               <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+               </svg>
+             </div>
+             <div className="ml-3">
+               <h3 className="text-sm font-medium text-red-800">
+                 Ju lutemi korrigjoni gabimet e mëposhtme:
+               </h3>
+               <div className="mt-2 text-sm text-red-700">
+                 <ul className="list-disc list-inside space-y-1">
+                   {Object.entries(errors).map(([field, error]) => (
+                     <li key={field}>
+                       <span className="font-medium">{getFieldLabel(field)}:</span> {error}
+                     </li>
+                   ))}
+                 </ul>
                </div>
              </div>
            </div>
@@ -506,7 +639,7 @@ const StudentForm: React.FC = () => {
                  value={formData.studentID}
                  onChange={(e) => handleInputChange('studentID', e.target.value)}
                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                   errors.studentID ? 'border-red-300' : 'border-gray-300'
+                   getFieldBorderColor('studentID')
                  } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                  placeholder="1234567890"
                  readOnly={!isEditing}
@@ -534,7 +667,7 @@ const StudentForm: React.FC = () => {
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.firstName ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('firstName')
                 }`}
                 placeholder="Shkruani emrin"
               />
@@ -550,7 +683,7 @@ const StudentForm: React.FC = () => {
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.lastName ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('lastName')
                 }`}
                 placeholder="Shkruani mbiemrin"
               />
@@ -566,7 +699,7 @@ const StudentForm: React.FC = () => {
                 value={formData.parentName}
                 onChange={(e) => handleInputChange('parentName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.parentName ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('parentName')
                 }`}
                 placeholder="Shkruani emrin e prindit"
               />
@@ -596,7 +729,7 @@ const StudentForm: React.FC = () => {
                 value={formData.dateOfBirth}
                 onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.dateOfBirth ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('dateOfBirth')
                 }`}
               />
               {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth}</p>}
@@ -611,7 +744,7 @@ const StudentForm: React.FC = () => {
                 value={formData.phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.phone ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('phone')
                 }`}
                 placeholder="044 123 456"
                 maxLength={15}
@@ -629,7 +762,7 @@ const StudentForm: React.FC = () => {
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.address ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('address')
                 }`}
                 placeholder="Rruga, Qyteti"
               />
@@ -648,7 +781,7 @@ const StudentForm: React.FC = () => {
                   debouncedDuplicateCheck('email', e.target.value);
                 }}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('email')
                 }`}
                 placeholder="student@email.com"
               />
@@ -696,7 +829,7 @@ const StudentForm: React.FC = () => {
                 value={formData.program}
                 onChange={(e) => handleInputChange('program', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.program ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('program')
                 }`}
               >
                 <option value="">Zgjidh programin</option>
@@ -740,7 +873,7 @@ const StudentForm: React.FC = () => {
                 value={formData.totalAmount}
                 onChange={(e) => handleInputChange('totalAmount', Number(e.target.value))}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.totalAmount ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('totalAmount')
                 }`}
                 placeholder="0"
               />
@@ -759,7 +892,7 @@ const StudentForm: React.FC = () => {
                 value={formData.paidAmount}
                 onChange={(e) => handleInputChange('paidAmount', Number(e.target.value))}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.paidAmount ? 'border-red-300' : 'border-gray-300'
+                  getFieldBorderColor('paidAmount')
                 }`}
                 placeholder="0"
                 readOnly={isEditing}
