@@ -15,26 +15,26 @@ const lectureSchema = new mongoose.Schema({
     required: [true, 'Program is required'],
     enum: [
       'Shkenca Kompjuterike',
-      'Ekonomi e Përgjithshme',
-      'Juridik i Përgjithshëm',
-      'Përkujdesje dhe Mirëqenie Sociale'
+      'Ekonomi e Pergjithshme',
+      'Juridik i Pergjithshem',
+      'Perkujdesje dhe Mireqenie Sociale'
     ]
   },
   fileName: {
     type: String,
-    required: [true, 'File name is required']
+    required: false
   },
   originalFileName: {
     type: String,
-    required: [true, 'Original file name is required']
+    required: false
   },
   filePath: {
     type: String,
-    required: [true, 'File path is required']
+    required: false
   },
   fileSize: {
     type: Number,
-    required: [true, 'File size is required']
+    required: false
   },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,

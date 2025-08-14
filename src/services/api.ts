@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { apiConfig, endpoints } from '../config/api';
-import { Student, User, StudentFilters, Lecture, PaymentRecord, PaymentStats } from '../types';
+import { Student, User, StudentFilters, Lecture, PaymentRecord, PaymentStats, Subject } from '../types';
 
 class ApiService {
   private api: AxiosInstance;
@@ -159,6 +159,38 @@ class ApiService {
   async getPaymentStats(studentId: string): Promise<PaymentStats> {
     const response = await this.api.get(`/payment-records/student/${studentId}/stats`);
     return response.data;
+  }
+
+  // Subject methods
+  async getSubjects(program?: string): Promise<Subject[]> {
+    const params = program ? `?program=${encodeURIComponent(program)}` : '';
+    const response = await this.api.get(`/subjects${params}`);
+    return response.data;
+  }
+
+  async getSubjectById(id: string): Promise<Subject> {
+    const response = await this.api.get(`/subjects/${id}`);
+    return response.data;
+  }
+
+  async addSubject(subjectData: {
+    name: string;
+    program: string;
+    description?: string;
+    credits: number;
+    semester: number;
+  }): Promise<Subject> {
+    const response = await this.api.post('/subjects', subjectData);
+    return response.data;
+  }
+
+  async updateSubject(id: string, updates: Partial<Subject>): Promise<Subject> {
+    const response = await this.api.put(`/subjects/${id}`, updates);
+    return response.data;
+  }
+
+  async deleteSubject(id: string): Promise<void> {
+    await this.api.delete(`/subjects/${id}`);
   }
 }
 

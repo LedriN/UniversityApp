@@ -49,11 +49,6 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedFile) {
-      setError('Please select a PDF file');
-      return;
-    }
-
     if (!formData.title.trim()) {
       setError('Title is required');
       return;
@@ -67,7 +62,11 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
       uploadFormData.append('title', formData.title);
       uploadFormData.append('description', formData.description);
       uploadFormData.append('program', program);
-      uploadFormData.append('pdf', selectedFile);
+      
+      // Only append PDF if a file is selected
+      if (selectedFile) {
+        uploadFormData.append('pdf', selectedFile);
+      }
 
       const response = await apiService.uploadLecture(uploadFormData);
       onUploadSuccess(response.lecture);
@@ -87,7 +86,7 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 m-0">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -139,7 +138,7 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Skedari PDF *
+              Skedari PDF (opsional)
             </label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
               <input

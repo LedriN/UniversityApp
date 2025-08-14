@@ -40,6 +40,12 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
   };
 
   const handleDownload = async (lecture: Lecture) => {
+    // Check if lecture has a PDF file
+    if (!lecture.filePath || !lecture.fileName) {
+      alert('This lecture does not have a PDF file to download');
+      return;
+    }
+
     try {
       setDownloadingId(lecture.id);
       const blob = await apiService.downloadLecture(lecture.id);
@@ -181,19 +187,27 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
                       <User size={16} />
                       <span>{lecture.uploadedBy.username}</span>
                     </div>
-                    <span>{formatFileSize(lecture.fileSize)}</span>
+                    {lecture.fileSize && (
+                      <span>{formatFileSize(lecture.fileSize)}</span>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2 ml-4">
-                  <button
-                    onClick={() => handleDownload(lecture)}
-                    disabled={downloadingId === lecture.id}
-                    className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                  >
-                    <Download size={16} />
-                    {downloadingId === lecture.id ? 'Duke shkarkuar...' : 'Shkarko'}
-                  </button>
+                  {lecture.filePath && lecture.fileName ? (
+                    <button
+                      onClick={() => handleDownload(lecture)}
+                      disabled={downloadingId === lecture.id}
+                      className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      <Download size={16} />
+                      {downloadingId === lecture.id ? 'Duke shkarkuar...' : 'Shkarko'}
+                    </button>
+                  ) : (
+                    <span className="text-sm text-gray-500 px-3 py-2">
+                      Nuk ka PDF
+                    </span>
+                  )}
                   
                   {(userRole === 'admin' || userRole === 'staff') && (
                     <button

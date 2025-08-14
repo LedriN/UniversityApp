@@ -141,17 +141,17 @@ const StudentDetail: React.FC = () => {
      pdf.setFont('helvetica', 'bold');
      pdf.text(`ID ${student.studentID}`, pageWidth - margin - 5, 52, { align: 'right' });
      
-     // Main title
-     pdf.setFontSize(20);
-     pdf.setFont('helvetica', 'bold');
-     pdf.text('VËRTETIM', pageWidth / 2, 95, { align: 'center' });
-     
-     // Student name in blue
-     pdf.setFontSize(16);
-     pdf.setTextColor(0, 0, 255);
-     pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 108, { align: 'center' });
-     
-     let yPos = 120;
+           // Main title
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('VËRTETIM', pageWidth / 2, 85, { align: 'center' });
+      
+      // Student name in blue
+      pdf.setFontSize(16);
+      pdf.setTextColor(0, 0, 255);
+      pdf.text(`${student.firstName} ${student.lastName}`, pageWidth / 2, 98, { align: 'center' });
+      
+      let yPos = 110;
      
      // Personal Data Section
      pdf.setFontSize(12);
@@ -195,6 +195,55 @@ const StudentDetail: React.FC = () => {
      addInfoRow('Forma e studimeve', 'E rregullt');
      addInfoRow('Shkolla e Mëparshme', student.previousSchool);
      addInfoRow('Adresa e Shkollës', student.previousSchoolAddress || '');
+     
+     // Comment Section (if exists)
+     if (student.comment) {
+       yPos += 8;
+       pdf.setFontSize(12);
+       pdf.setFont('helvetica', 'bold');
+       pdf.text('KOMENT', margin + 10, yPos);
+       
+       yPos += 12;
+       pdf.setFontSize(9);
+       pdf.setFont('helvetica', 'normal');
+       
+       // Split comment into lines if it's too long
+       const maxLineLength = 80;
+       const commentLines = [];
+       let currentLine = '';
+       
+       const words = student.comment.split(' ');
+       for (const word of words) {
+         if ((currentLine + word).length <= maxLineLength) {
+           currentLine += (currentLine ? ' ' : '') + word;
+         } else {
+           if (currentLine) commentLines.push(currentLine);
+           currentLine = word;
+         }
+       }
+       if (currentLine) commentLines.push(currentLine);
+       
+       commentLines.forEach(line => {
+         pdf.text(line, margin + 10, yPos);
+         yPos += 7;
+       });
+     }
+     
+     // User Credentials Section (if available)
+     if (student.userCredentials) {
+       yPos += 8;
+       pdf.setFontSize(12);
+       pdf.setFont('helvetica', 'bold');
+       pdf.text('KREDENCIALET E HYRJES', margin + 10, yPos);
+       
+       yPos += 12;
+       pdf.setFontSize(9);
+       pdf.setFont('helvetica', 'normal');
+       
+       addInfoRow('Username', student.userCredentials.username);
+       addInfoRow('Fjalëkalimi', student.userCredentials.password);
+       addInfoRow('Email', student.email);
+     }
      
      // Footer
      yPos += 15;
@@ -367,6 +416,22 @@ const StudentDetail: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Comment Section */}
+          {student.comment && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900">Koment</h3>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-900 whitespace-pre-wrap">{student.comment}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -400,21 +465,21 @@ const StudentDetail: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Shuma Totale:</span>
                 <span className="text-sm font-medium text-gray-900">
-                  €{(student.totalAmount / 100).toLocaleString()}
+                  €{student.totalAmount.toLocaleString()}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">E Paguar:</span>
                 <span className="text-sm font-medium text-green-600">
-                  €{(student.paidAmount / 100).toLocaleString()}
+                  €{student.paidAmount.toLocaleString()}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">E Mbetur:</span>
                 <span className="text-sm font-medium text-red-600">
-                  €{((student.totalAmount - student.paidAmount) / 100).toLocaleString()}
+                  €{(student.totalAmount - student.paidAmount).toLocaleString()}
                 </span>
               </div>
               

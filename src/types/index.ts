@@ -15,8 +15,13 @@ export interface Student {
   academicYear: string;
   totalAmount: number;
   paidAmount: number;
+  comment?: string;
   createdAt: string;
   updatedAt: string;
+  userCredentials?: {
+    username: string;
+    password: string;
+  };
 }
 
 export interface PaymentRecord {
@@ -68,16 +73,28 @@ export interface Lecture {
   title: string;
   description?: string;
   program: string;
-  fileName: string;
-  originalFileName: string;
-  filePath: string;
-  fileSize: number;
+  fileName?: string;
+  originalFileName?: string;
+  filePath?: string;
+  fileSize?: number;
   uploadedBy: {
     id: string;
     username: string;
     email: string;
   };
   uploadedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  program: string;
+  description?: string;
+  credits: number;
+  semester: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

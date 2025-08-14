@@ -38,7 +38,8 @@ router.get('/', [
         { lastName: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
         { program: { $regex: search, $options: 'i' } },
-        { studentID: { $regex: search, $options: 'i' } }
+        { studentID: { $regex: search, $options: 'i' } },
+        { comment: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -111,7 +112,28 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    res.json(student);
+    // Find the associated user account
+    const user = await User.findOne({ 
+      email: student.email,
+      role: 'student'
+    });
+
+    // Create response object with student data
+    const studentData = student.toObject();
+    
+    // Add user credentials if found
+    if (user) {
+      // Generate a new password for PDF display (since we can't retrieve the original)
+      const { generatePassword } = require('../utils/emailService');
+      const newPassword = generatePassword();
+      
+      studentData.userCredentials = {
+        username: user.username,
+        password: newPassword // Generate a new password for PDF
+      };
+    }
+
+    res.json(studentData);
   } catch (error) {
     if (error.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid student ID' });
@@ -123,9 +145,8 @@ router.get('/:id', auth, async (req, res) => {
 
 // @route   POST /api/students
 // @desc    Create new student
-// @access  Private
+// @access  Public
 router.post('/', [
-  auth,
   body('studentID').trim().notEmpty().withMessage('Student ID is required'),
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
@@ -133,7 +154,7 @@ router.post('/', [
   body('gender').isIn(['M', 'F']).withMessage('Gender must be M or F'),
   body('dateOfBirth').notEmpty().withMessage('Date of birth is required'),
   body('address').trim().notEmpty().withMessage('Address is required'),
-  body('phone').trim().notEmpty().withMessage('Phone number is required'),
+  body('phone').trim().notEmpty().withMessage('Phone number is required').matches(/^\d{3}-\d{3}-\d{3}$/).withMessage('Valid phone number in format XXX-XXX-XXX is required'),
   body('email').isEmail().withMessage('Valid email is required'),
   body('program').notEmpty().withMessage('Program is required'),
   body('academicYear').notEmpty().withMessage('Academic year is required'),
@@ -275,7 +296,7 @@ router.put('/:id', [
   body('gender').optional().isIn(['M', 'F']).withMessage('Gender must be M or F'),
   body('dateOfBirth').optional().isISO8601().withMessage('Valid date of birth is required'),
   body('address').optional().trim().notEmpty().withMessage('Address cannot be empty'),
-  body('phone').optional().matches(/^(\+355|0)[0-9]{8,9}$/).withMessage('Valid Albanian phone number is required'),
+  body('phone').optional().matches(/^\d{3}-\d{3}-\d{3}$/).withMessage('Valid phone number in format XXX-XXX-XXX is required'),
   body('email').optional().isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('program').optional().notEmpty().withMessage('Program cannot be empty'),
   body('academicYear').optional().matches(/^\d{4}-\d{4}$/).withMessage('Academic year must be in format YYYY-YYYY'),

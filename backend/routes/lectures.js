@@ -53,9 +53,9 @@ router.get('/program/:program', auth, async (req, res) => {
     // Validate program
     const validPrograms = [
       'Shkenca Kompjuterike',
-      'Ekonomi e Përgjithshme',
-      'Juridik i Përgjithshëm',
-      'Përkujdesje dhe Mirëqenie Sociale'
+      'Ekonomi e Pergjithshme',
+      'Juridik i Pergjithshem',
+      'Perkujdesje dhe Mireqenie Sociale'
     ];
 
     if (!validPrograms.includes(program)) {
@@ -107,31 +107,33 @@ router.post('/upload', auth, upload.single('pdf'), async (req, res) => {
 
     const validPrograms = [
       'Shkenca Kompjuterike',
-      'Ekonomi e Përgjithshme',
-      'Juridik i Përgjithshëm',
-      'Përkujdesje dhe Mirëqenie Sociale'
+      'Ekonomi e Pergjithshme',
+      'Juridik i Pergjithshem',
+      'Perkujdesje dhe Mireqenie Sociale'
     ];
 
     if (!validPrograms.includes(program)) {
       return res.status(400).json({ message: 'Invalid program' });
     }
 
-    // Check if file was uploaded
-    if (!req.file) {
-      return res.status(400).json({ message: 'PDF file is required' });
-    }
-
-    // Create new lecture record
-    const lecture = new Lecture({
+    // Create lecture data object
+    const lectureData = {
       title: title.trim(),
       description: description ? description.trim() : '',
       program,
-      fileName: req.file.filename,
-      originalFileName: req.file.originalname,
-      filePath: req.file.path,
-      fileSize: req.file.size,
       uploadedBy: req.user.id
-    });
+    };
+
+    // Add file information if PDF was uploaded
+    if (req.file) {
+      lectureData.fileName = req.file.filename;
+      lectureData.originalFileName = req.file.originalname;
+      lectureData.filePath = req.file.path;
+      lectureData.fileSize = req.file.size;
+    }
+
+    // Create new lecture record
+    const lecture = new Lecture(lectureData);
 
     await lecture.save();
 
@@ -182,6 +184,11 @@ router.get('/download/:id', auth, async (req, res) => {
       }
     }
 
+    // Check if lecture has a PDF file
+    if (!lecture.filePath || !lecture.fileName) {
+      return res.status(404).json({ message: 'This lecture does not have a PDF file' });
+    }
+
     // Check if file exists
     if (!fs.existsSync(lecture.filePath)) {
       return res.status(404).json({ message: 'File not found' });
@@ -219,8 +226,8 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Lecture not found' });
     }
 
-    // Delete file from filesystem
-    if (fs.existsSync(lecture.filePath)) {
+    // Delete file from filesystem if it exists
+    if (lecture.filePath && fs.existsSync(lecture.filePath)) {
       fs.unlinkSync(lecture.filePath);
     }
 

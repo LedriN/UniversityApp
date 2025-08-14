@@ -1,16 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, GraduationCap, ArrowLeft, Search, FileText } from 'lucide-react';
+import { Users, GraduationCap, ArrowLeft, Search, FileText, BookOpen } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Student } from '../types';
 import LectureList from '../components/LectureList';
+import SubjectList from '../components/SubjectList';
 
 const Departments: React.FC = () => {
   const { students, currentUser } = useApp();
   const navigate = useNavigate();
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'students' | 'lectures'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'lectures' | 'subjects'>('students');
 
   // Define all available programs
   const allPrograms = [
@@ -94,7 +95,8 @@ const Departments: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{selectedProgram}</h1>
             <p className="text-gray-600">
-              {activeTab === 'students' ? `${filteredStudents.length} studentë` : 'Leksionet'} në këtë program
+              {activeTab === 'students' ? `${filteredStudents.length} studentë` : 
+               activeTab === 'lectures' ? 'Leksionet' : 'Lendet'} në këtë program
             </p>
           </div>
         </div>
@@ -127,6 +129,19 @@ const Departments: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <FileText size={20} />
                   Leksionet
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('subjects')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'subjects'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <BookOpen size={20} />
+                  Lendet
                 </div>
               </button>
             </nav>
@@ -248,8 +263,13 @@ const Departments: React.FC = () => {
           )}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'lectures' ? (
           <LectureList 
+            program={selectedProgram} 
+            userRole={currentUser?.role || 'student'} 
+          />
+        ) : (
+          <SubjectList 
             program={selectedProgram} 
             userRole={currentUser?.role || 'student'} 
           />

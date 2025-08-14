@@ -6,7 +6,7 @@ const studentSchema = new mongoose.Schema({
     required: [true, 'Student ID is required'],
     unique: true,
     trim: true,
-    match: [/^\d{10}$/, 'Student ID must be exactly 10 digits']
+    match: [/^\d{2}\/\d{3}\/\d{2}$/, 'Student ID must be in format XX/XXX/XX']
   },
   firstName: {
     type: String,
@@ -52,7 +52,7 @@ const studentSchema = new mongoose.Schema({
     required: [true, 'Phone number is required'],
     unique: true,
     trim: true,
-    match: [/^(\+355|0)[0-9]{8,9}$/, 'Please enter a valid Albanian phone number']
+    match: [/^\d{3}-\d{3}-\d{3}$/, 'Please enter a valid phone number in format XXX-XXX-XXX']
   },
   email: {
     type: String,
@@ -102,6 +102,11 @@ const studentSchema = new mongoose.Schema({
       },
       message: 'Paid amount cannot exceed total amount'
     }
+  },
+  comment: {
+    type: String,
+    trim: true,
+    maxlength: [1000, 'Comment cannot exceed 1000 characters']
   }
 }, {
   timestamps: true
@@ -137,7 +142,7 @@ studentSchema.set('toJSON', { virtuals: true });
 studentSchema.set('toObject', { virtuals: true });
 
 // Index for better search performance
-studentSchema.index({ firstName: 'text', lastName: 'text', email: 'text', program: 'text', studentID: 'text' });
+studentSchema.index({ firstName: 'text', lastName: 'text', email: 'text', program: 'text', studentID: 'text', comment: 'text' });
 studentSchema.index({ email: 1 });
 studentSchema.index({ phone: 1 });
 studentSchema.index({ studentID: 1 });

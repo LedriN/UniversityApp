@@ -10,16 +10,18 @@ import {
   CheckCircle,
   CreditCard,
   DollarSign,
-  X
+  X,
+  BookOpen
 } from 'lucide-react';
 import { apiService } from '../services/api';
-import { Lecture, Student } from '../types';
+import { Lecture, Student, Subject } from '../types';
 import { useApp } from '../context/AppContext';
 import StudentLayout from '../components/StudentLayout';
 
 const StudentDepartmentPage: React.FC = () => {
   const { currentUser } = useApp();
   const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [studentData, setStudentData] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,6 +30,7 @@ const StudentDepartmentPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'lectures' | 'subjects'>('lectures');
 
   // Get student's program and data from database
   const getStudentData = async () => {
@@ -75,6 +78,19 @@ const StudentDepartmentPage: React.FC = () => {
     }
   };
 
+  const fetchSubjects = async () => {
+    if (!studentProgram) {
+      return;
+    }
+
+    try {
+      const data = await apiService.getSubjects(studentProgram);
+      setSubjects(data);
+    } catch (err: any) {
+      console.error('Error fetching subjects:', err);
+    }
+  };
+
   useEffect(() => {
     const initializeData = async () => {
       await getStudentData();
@@ -86,6 +102,7 @@ const StudentDepartmentPage: React.FC = () => {
   useEffect(() => {
     if (studentProgram) {
       fetchLectures();
+      fetchSubjects();
     }
   }, [studentProgram]);
 
@@ -106,7 +123,7 @@ const StudentDepartmentPage: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = lecture.originalFileName;
+      link.download = lecture.originalFileName || 'lecture.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -129,8 +146,8 @@ const StudentDepartmentPage: React.FC = () => {
     setSelectedLecture(null);
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+  const formatFileSize = (bytes: number | undefined) => {
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -307,25 +324,61 @@ const StudentDepartmentPage: React.FC = () => {
         </div>
       )}
 
-      {/* Search and Filters */}
+      {/* Tab Navigation */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Kërko leksione..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
-            <Filter className="h-5 w-5" />
-            <span>Filtro</span>
+        <div className="flex space-x-1">
+          <button
+            onClick={() => setActiveTab('lectures')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'lectures'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <FileText className="h-5 w-5" />
+            <span>Leksionet</span>
+            <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+              {lectures.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('subjects')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'subjects'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <BookOpen className="h-5 w-5" />
+            <span>Lëndët</span>
+            <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+              {subjects.length}
+            </span>
           </button>
         </div>
       </div>
+
+      {/* Search and Filters - Only show for lectures */}
+      {activeTab === 'lectures' && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Kërko leksione..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+              <Filter className="h-5 w-5" />
+              <span>Filtro</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -337,78 +390,147 @@ const StudentDepartmentPage: React.FC = () => {
         </div>
       )}
 
-      {/* Lectures Grid */}
-      {filteredLectures.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <FileText className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {searchTerm ? 'Nuk u gjetën rezultate' : 'Nuk ka leksione të ngarkuara'}
-          </h3>
-          <p className="text-gray-600">
-            {searchTerm 
-              ? 'Provoni të ndryshoni kriteret e kërkimit'
-              : 'Leksionet do të shfaqen këtu kur të ngarkohen nga stafi'
-            }
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredLectures.map((lecture) => (
-            <div
-              key={lecture.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer"
-              onClick={() => handleLectureClick(lecture)}
-            >
-              <div className="flex items-start space-x-3 mb-4">
-                <div className="bg-blue-100 p-2 rounded-lg flex-shrink-0">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
-                    {lecture.title}
-                  </h3>
-                  {lecture.description && (
-                    <p className="text-gray-600 mt-1 text-sm line-clamp-2">
-                      {lecture.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-4 flex-1">
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <Calendar className="h-4 w-4" />
-                  <span className="truncate">{formatDate(lecture.uploadedAt)}</span>
-                </div>
-                
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <User className="h-4 w-4" />
-                  <span className="truncate">{lecture.uploadedBy.username}</span>
-                </div>
-                
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    {formatFileSize(lecture.fileSize)}
-                  </span>
-                </div>
-              </div>
-              
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDownload(lecture);
-                }}
-                disabled={downloadingId === lecture.id}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                <span>
-                  {downloadingId === lecture.id ? 'Duke shkarkuar...' : 'Shkarko'}
-                </span>
-              </button>
+      {/* Lectures Tab Content */}
+      {activeTab === 'lectures' && (
+        <>
+          {filteredLectures.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+              <FileText className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {searchTerm ? 'Nuk u gjetën rezultate' : 'Nuk ka leksione të ngarkuara'}
+              </h3>
+              <p className="text-gray-600">
+                {searchTerm 
+                  ? 'Provoni të ndryshoni kriteret e kërkimit'
+                  : 'Leksionet do të shfaqen këtu kur të ngarkohen nga stafi'
+                }
+              </p>
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredLectures.map((lecture) => (
+                <div
+                  key={lecture.id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer"
+                  onClick={() => handleLectureClick(lecture)}
+                >
+                  <div className="flex items-start space-x-3 mb-4">
+                    <div className="bg-blue-100 p-2 rounded-lg flex-shrink-0">
+                      <FileText className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                        {lecture.title}
+                      </h3>
+                      {lecture.description && (
+                        <p className="text-gray-600 mt-1 text-sm line-clamp-2">
+                          {lecture.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 mb-4 flex-1">
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <Calendar className="h-4 w-4" />
+                      <span className="truncate">{formatDate(lecture.uploadedAt)}</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <User className="h-4 w-4" />
+                      <span className="truncate">{lecture.uploadedBy.username}</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <span className="bg-gray-100 px-2 py-1 rounded-md text-xs">
+                        {formatFileSize(lecture.fileSize || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(lecture);
+                    }}
+                    disabled={downloadingId === lecture.id}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>
+                      {downloadingId === lecture.id ? 'Duke shkarkuar...' : 'Shkarko'}
+                    </span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Subjects Tab Content */}
+      {activeTab === 'subjects' && (
+        <>
+          {subjects.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+              <BookOpen className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Nuk ka lëndë të regjistruara
+              </h3>
+              <p className="text-gray-600">
+                Lëndët do të shfaqen këtu kur të regjistrohen nga stafi
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {subjects.map((subject) => (
+                <div
+                  key={subject.id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-start space-x-3 mb-4">
+                    <div className="bg-green-100 p-2 rounded-lg flex-shrink-0">
+                      <BookOpen className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                        {subject.name}
+                      </h3>
+                      {subject.description && (
+                        <p className="text-gray-600 mt-1 text-sm line-clamp-2">
+                          {subject.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Semestri:</span>
+                      <span className="font-medium text-gray-900">{subject.semester}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Kredite:</span>
+                      <span className="font-medium text-gray-900">{subject.credits}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Statusi:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        subject.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {subject.isActive ? 'Aktive' : 'Jo Aktive'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Lecture Details Modal */}

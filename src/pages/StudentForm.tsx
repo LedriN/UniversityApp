@@ -17,9 +17,38 @@ const StudentForm: React.FC = () => {
   const isEditing = Boolean(id);
   const { loading: apiLoading, execute } = useAsyncOperation();
 
-  // Generate a 10-digit student ID
-  const generateStudentID = () => {
-    return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+  // Generate student ID in format 01/001/25 with auto-incrementing number
+  const generateStudentID = async () => {
+    try {
+      const students = await apiService.getStudents();
+      // Find the highest existing number
+      let maxNumber = 0;
+      
+      students.forEach(student => {
+        if (student.studentID && student.studentID.includes('/')) {
+          const parts = student.studentID.split('/');
+          if (parts.length === 3 && parts[1]) {
+            const number = parseInt(parts[1], 10);
+            if (!isNaN(number) && number > maxNumber) {
+              maxNumber = number;
+            }
+          }
+        }
+      });
+      
+      // Increment and format with leading zeros
+      const nextNumber = maxNumber + 1;
+      const formattedNumber = nextNumber.toString().padStart(3, '0');
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+      
+      return `01/${formattedNumber}/${currentYear}`;
+    } catch (error) {
+      console.error('Error generating student ID:', error);
+      // Fallback to current timestamp if API fails
+      const timestamp = Date.now().toString().slice(-3);
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+      return `01/${timestamp}/${currentYear}`;
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -35,9 +64,10 @@ const StudentForm: React.FC = () => {
     previousSchool: '',
     previousSchoolAddress: '',
     program: '',
-    academicYear: '2024-2025',
-    totalAmount: 0,
-    paidAmount: 0
+    academicYear: '2025-2026',
+    totalAmount: 3000,
+    paidAmount: null as number | null,
+    comment: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,6 +77,7 @@ const StudentForm: React.FC = () => {
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
+  const phoneValidationTimeoutRef = React.useRef<number | null>(null);
 
   const programs = [
     'Shkenca Kompjuterike',
@@ -58,12 +89,31 @@ const StudentForm: React.FC = () => {
   // Generate student ID when creating a new student
   useEffect(() => {
     if (!isEditing) {
+      const loadStudentID = async () => {
+        const newStudentID = await generateStudentID();
       setFormData(prev => ({
         ...prev,
-        studentID: generateStudentID()
+          studentID: newStudentID
       }));
+      };
+      loadStudentID();
     }
   }, [isEditing]);
+
+  // Trigger validation when form data changes to update submit button state
+  useEffect(() => {
+    // This will force a re-render of the submit button when form data changes
+    // The actual validation is handled in handleInputChange and validateForm
+  }, [formData, errors]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (phoneValidationTimeoutRef.current) {
+        clearTimeout(phoneValidationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -87,7 +137,8 @@ const StudentForm: React.FC = () => {
             program: result.program,
             academicYear: result.academicYear,
             totalAmount: result.totalAmount,
-            paidAmount: result.paidAmount
+            paidAmount: result.paidAmount,
+            comment: result.comment || ''
           });
           
           // Load payment records
@@ -153,8 +204,9 @@ const StudentForm: React.FC = () => {
     
     // Financial validations
     if (formData.totalAmount <= 0) newErrors.totalAmount = 'Shuma totale duhet të jetë më e madhe se 0';
-    if (formData.paidAmount < 0) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë negative';
-    if (formData.paidAmount > formData.totalAmount) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë më e madhe se totali';
+     if (formData.paidAmount === null) newErrors.paidAmount = 'Shuma e paguar është e detyrueshme';
+     if (formData.paidAmount !== null && formData.paidAmount < 0) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë negative';
+     if (formData.paidAmount !== null && formData.paidAmount > formData.totalAmount) newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë më e madhe se totali';
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -163,27 +215,33 @@ const StudentForm: React.FC = () => {
     }
 
     // Phone validation
-    const phoneRegex = /^(\+355|0)[0-9]{8,9}$/;
-    if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Format i pavlefshëm i numrit të telefonit';
+    const phoneRegex = /^\d{3}-\d{3}-\d{3}$/;
+    if (formData.phone && !phoneRegex.test(formData.phone)) {
+      newErrors.phone = 'Format i numrit të telefonit duhet të jetë XXX-XXX-XXX';
     }
 
     // Date validation
     if (formData.dateOfBirth) {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
+      
+      // Calculate age more accurately
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
       
       if (birthDate > today) {
         newErrors.dateOfBirth = 'Data e lindjes nuk mund të jetë në të ardhmen';
-      } else if (age < 15 || age > 100) {
-        newErrors.dateOfBirth = 'Mosha duhet të jetë mes 15 dhe 100 vjetësh';
+      } else if (age < 17) {
+        newErrors.dateOfBirth = 'Studenti duhet të jetë së paku 17 vjeç për t\'u regjistruar';
       }
     }
 
     // Student ID validation
-    if (formData.studentID && !/^\d{10}$/.test(formData.studentID)) {
-      newErrors.studentID = 'ID-ja e studentit duhet të ketë saktësisht 10 shifra';
+    if (formData.studentID && !/^\d{2}\/\d{3}\/\d{2}$/.test(formData.studentID)) {
+      newErrors.studentID = 'ID-ja e studentit duhet të ketë formatin XX/XXX/XX';
     }
 
     setErrors(newErrors);
@@ -239,6 +297,8 @@ const StudentForm: React.FC = () => {
     
     if (!validateForm()) return;
 
+
+
     // Check for duplicates before submitting
     if (!isEditing) {
       const noDuplicates = await checkForDuplicates();
@@ -248,7 +308,10 @@ const StudentForm: React.FC = () => {
     try {
       setLoading(true);
       if (isEditing && id) {
-        await updateStudent(id, formData);
+         await updateStudent(id, {
+           ...formData,
+           paidAmount: formData.paidAmount ?? 0
+         });
         showToast({
           type: 'success',
           title: 'Sukses!',
@@ -257,7 +320,10 @@ const StudentForm: React.FC = () => {
         });
         navigate('/students');
       } else {
-        await addStudent(formData);
+         await addStudent({
+           ...formData,
+           paidAmount: formData.paidAmount ?? 0
+         });
         
         // Show success toast with login credentials for new students
         const username = `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`;
@@ -287,6 +353,7 @@ const StudentForm: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error saving student:', error);
+      console.error('Error response:', error.response?.data);
       
       // Handle field-specific errors from backend
       if (error.response?.data?.field) {
@@ -298,6 +365,26 @@ const StudentForm: React.FC = () => {
           type: 'error',
           title: 'Gabim!',
           message: message,
+          duration: 5000
+        });
+      } else if (error.response?.data?.errors) {
+        // Handle validation errors array
+        const validationErrors = error.response.data.errors;
+        console.error('Validation errors:', validationErrors);
+        
+        const newErrors: Record<string, string> = {};
+        validationErrors.forEach((err: any) => {
+          if (err.path) {
+            newErrors[err.path] = err.msg;
+          }
+        });
+        
+        setErrors(newErrors);
+        
+        showToast({
+          type: 'error',
+          title: 'Gabim!',
+          message: 'Ju lutemi korrigjoni gabimet e mëposhtme',
           duration: 5000
         });
       } else {
@@ -315,13 +402,15 @@ const StudentForm: React.FC = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string | number) => {
+     const handleInputChange = (field: string, value: string | number | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+     
+     // Clear error for this field immediately
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
     
-    // Real-time validation for program field
+    // Real-time validation for specific fields
     if (field === 'program') {
       const newErrors = { ...errors };
       if (!value || value === '' || value === 'Zgjidh programin') {
@@ -331,14 +420,108 @@ const StudentForm: React.FC = () => {
       }
       setErrors(newErrors);
     }
+    
+    // Real-time validation for date of birth
+    if (field === 'dateOfBirth' && value) {
+      const birthDate = new Date(value as string);
+      const today = new Date();
+      
+      // Calculate age more accurately
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      const newErrors = { ...errors };
+      if (birthDate > today) {
+        newErrors.dateOfBirth = 'Data e lindjes nuk mund të jetë në të ardhmen';
+      } else if (age < 17) {
+        newErrors.dateOfBirth = 'Studenti duhet të jetë së paku 17 vjeç për t\'u regjistruar';
+      } else {
+        delete newErrors.dateOfBirth;
+      }
+      setErrors(newErrors);
+    }
+    
+    // Real-time validation for paid amount
+    if (field === 'paidAmount') {
+      const newErrors = { ...errors };
+      if (value === null) {
+        newErrors.paidAmount = 'Shuma e paguar është e detyrueshme';
+      } else if (typeof value === 'number' && value < 0) {
+        newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë negative';
+      } else if (typeof value === 'number' && value > formData.totalAmount) {
+        newErrors.paidAmount = 'Shuma e paguar nuk mund të jetë më e madhe se totali';
+      } else {
+        delete newErrors.paidAmount;
+      }
+      setErrors(newErrors);
+    }
+    
+    // Real-time validation for total amount
+    if (field === 'totalAmount') {
+      const newErrors = { ...errors };
+      if (typeof value === 'number' && value <= 0) {
+        newErrors.totalAmount = 'Shuma totale duhet të jetë më e madhe se 0';
+      } else {
+        delete newErrors.totalAmount;
+      }
+      setErrors(newErrors);
+    }
+    
+    // Debounced validation for phone number
+    if (field === 'phone') {
+      // Clear any existing phone error immediately when user starts typing
+      if (errors.phone) {
+        setErrors(prev => ({ ...prev, phone: '' }));
+      }
+      
+      // Clear existing timeout
+      if (phoneValidationTimeoutRef.current) {
+        clearTimeout(phoneValidationTimeoutRef.current);
+      }
+      
+      // Set up debounced validation
+      phoneValidationTimeoutRef.current = setTimeout(() => {
+        if (value && typeof value === 'string') {
+          const phoneRegex = /^\d{3}-\d{3}-\d{3}$/;
+          if (!phoneRegex.test(value)) {
+            setErrors(prev => ({ ...prev, phone: 'Format i numrit të telefonit duhet të jetë XXX-XXX-XXX' }));
+          }
+        }
+      }, 3000); // 3 seconds delay
+    }
   };
 
-  // Handle phone number input - only allow numbers and specific characters
+  // Handle phone number input - auto-format as XXX-XXX-XXX
   const handlePhoneChange = (value: string) => {
-    // Only allow numbers, +, and spaces
-    const cleanedValue = value.replace(/[^\d\s+]/g, '');
-    handleInputChange('phone', cleanedValue);
-    debouncedDuplicateCheck('phone', cleanedValue);
+    // Remove all non-digits
+    const digitsOnly = value.replace(/\D/g, '');
+    
+    // Format as XXX-XXX-XXX
+    let formattedValue = '';
+    if (digitsOnly.length <= 3) {
+      formattedValue = digitsOnly;
+    } else if (digitsOnly.length <= 6) {
+      formattedValue = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3)}`;
+    } else {
+      formattedValue = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6, 9)}`;
+    }
+    
+    handleInputChange('phone', formattedValue);
+    debouncedDuplicateCheck('phone', formattedValue);
+  };
+
+  // Handle name input - auto-capitalize first letter of each word
+  const handleNameChange = (field: 'firstName' | 'lastName' | 'parentName', value: string) => {
+    // Capitalize first letter of each word
+    const capitalizedValue = value
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    handleInputChange(field, capitalizedValue);
   };
 
   // Check if all required fields are filled
@@ -348,17 +531,26 @@ const StudentForm: React.FC = () => {
       'dateOfBirth', 'address', 'phone', 'email', 'program'
     ];
     
-    return requiredFields.every(field => {
+    // Check required fields
+    const requiredFieldsValid = requiredFields.every(field => {
       const value = formData[field as keyof typeof formData];
       if (typeof value === 'string') {
         return value.trim() !== '';
       }
       return value !== null && value !== undefined;
-    }) && 
+    });
+    
+    // Check financial fields
+    const financialFieldsValid = 
     formData.totalAmount > 0 && 
+      formData.paidAmount !== null && 
     formData.paidAmount >= 0 && 
-    formData.paidAmount <= formData.totalAmount &&
-    Object.keys(errors).length === 0;
+      formData.paidAmount <= formData.totalAmount;
+    
+    // Check if there are any current validation errors
+    const noValidationErrors = Object.keys(errors).length === 0;
+    
+    return requiredFieldsValid && financialFieldsValid && noValidationErrors;
   };
 
   // Debounced duplicate check for email and phone
@@ -407,12 +599,14 @@ const StudentForm: React.FC = () => {
   );
 
   const calculateDebt = () => {
-    return Math.max(0, formData.totalAmount - formData.paidAmount);
+     const paidAmount = formData.paidAmount ?? 0;
+     return Math.max(0, formData.totalAmount - paidAmount);
   };
 
   const calculateProgress = () => {
     if (formData.totalAmount === 0) return 0;
-    return Math.min(100, (formData.paidAmount / formData.totalAmount) * 100);
+     const paidAmount = formData.paidAmount ?? 0;
+     return Math.min(100, (paidAmount / formData.totalAmount) * 100);
   };
 
   // Helper function to get field validation status
@@ -448,7 +642,8 @@ const StudentForm: React.FC = () => {
       email: 'Email',
       program: 'Programi',
       totalAmount: 'Shuma Totale',
-      paidAmount: 'Shuma e Paguar'
+      paidAmount: 'Shuma e Paguar',
+      comment: 'Koment'
     };
     return labels[fieldName] || fieldName;
   };
@@ -473,7 +668,7 @@ const StudentForm: React.FC = () => {
       // Update student's paid amount
       setFormData(prev => ({
         ...prev,
-        paidAmount: prev.paidAmount + paymentData.amount
+         paidAmount: (prev.paidAmount ?? 0) + paymentData.amount
       }));
       
       // Update student state
@@ -524,7 +719,7 @@ const StudentForm: React.FC = () => {
         // Update student's paid amount
         setFormData(prev => ({
           ...prev,
-          paidAmount: Math.max(0, prev.paidAmount - deletedRecord.amount)
+           paidAmount: Math.max(0, (prev.paidAmount ?? 0) - deletedRecord.amount)
         }));
         
         // Update student state
@@ -641,9 +836,9 @@ const StudentForm: React.FC = () => {
                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                    getFieldBorderColor('studentID')
                  } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                 placeholder="1234567890"
+                 placeholder="01/001/25"
                  readOnly={!isEditing}
-                 maxLength={10}
+                 maxLength={9}
                />
                {errors.studentID && <p className="mt-1 text-sm text-red-600">{errors.studentID}</p>}
                {!isEditing && (
@@ -665,7 +860,7 @@ const StudentForm: React.FC = () => {
               <input
                 type="text"
                 value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                onChange={(e) => handleNameChange('firstName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('firstName')
                 }`}
@@ -681,7 +876,7 @@ const StudentForm: React.FC = () => {
               <input
                 type="text"
                 value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                onChange={(e) => handleNameChange('lastName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('lastName')
                 }`}
@@ -697,7 +892,7 @@ const StudentForm: React.FC = () => {
               <input
                 type="text"
                 value={formData.parentName}
-                onChange={(e) => handleInputChange('parentName', e.target.value)}
+                onChange={(e) => handleNameChange('parentName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('parentName')
                 }`}
@@ -746,11 +941,11 @@ const StudentForm: React.FC = () => {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('phone')
                 }`}
-                placeholder="044 123 456"
-                maxLength={15}
+                placeholder="044-123-456"
+                maxLength={11}
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-              <p className="mt-1 text-xs text-gray-500">Vetem numra, hapesira dhe simboli +</p>
+                             <p className="mt-1 text-xs text-gray-500">Format: XXX-XXX-XXX (vetëm numra, vizat shtohen automatikisht)</p>
             </div>
 
             <div className="sm:col-span-2">
@@ -849,10 +1044,40 @@ const StudentForm: React.FC = () => {
                 onChange={(e) => handleInputChange('academicYear', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
+                <option value="2024-2025">2024-2025</option>
                 <option value="2025-2026">2025-2026</option>
                 <option value="2026-2027">2026-2027</option>
                 <option value="2027-2028">2027-2028</option>
               </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Comment Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Koment</h3>
+          
+          <div className="grid grid-cols-1 gap-4 lg:gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Koment (Opsional)
+              </label>
+              <textarea
+                value={formData.comment}
+                onChange={(e) => handleInputChange('comment', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                placeholder="Shkruani një koment për këtë student (opsional)..."
+                rows={4}
+                maxLength={1000}
+              />
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs text-gray-500">
+                  Maksimum 1000 karaktere
+                </p>
+                <p className="text-xs text-gray-500">
+                  {formData.comment.length}/1000
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -875,7 +1100,7 @@ const StudentForm: React.FC = () => {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('totalAmount')
                 }`}
-                placeholder="0"
+                placeholder="3000"
               />
               {errors.totalAmount && <p className="mt-1 text-sm text-red-600">{errors.totalAmount}</p>}
             </div>
@@ -889,12 +1114,15 @@ const StudentForm: React.FC = () => {
                 min="0"
                 step="0.01"
                 max={formData.totalAmount}
-                value={formData.paidAmount}
-                onChange={(e) => handleInputChange('paidAmount', Number(e.target.value))}
+                 value={formData.paidAmount ?? ''}
+                 onChange={(e) => {
+                   const value = e.target.value;
+                   handleInputChange('paidAmount', value === '' ? null : Number(value));
+                 }}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('paidAmount')
                 }`}
-                placeholder="0"
+                 placeholder="Shkruani shumën e paguar"
                 readOnly={isEditing}
               />
               {errors.paidAmount && <p className="mt-1 text-sm text-red-600">{errors.paidAmount}</p>}
@@ -927,9 +1155,9 @@ const StudentForm: React.FC = () => {
               <div>
                 <span className="text-gray-600">Statusi:</span>
                 <span className={`ml-2 font-medium ${
-                  formData.paidAmount >= formData.totalAmount ? 'text-green-600' : 'text-orange-600'
+                   (formData.paidAmount ?? 0) >= formData.totalAmount ? 'text-green-600' : 'text-orange-600'
                 }`}>
-                  {formData.paidAmount >= formData.totalAmount ? 'I Paguar' : 'Me Borxh'}
+                   {(formData.paidAmount ?? 0) >= formData.totalAmount ? 'I Paguar' : 'Me Borxh'}
                 </span>
               </div>
               </div>
