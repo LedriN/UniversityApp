@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, BookOpen, Search, Filter } from 'lucide-react';
 import { useToast } from './ToastContainer';
 import { apiService } from '../services/api';
 import { Subject } from '../types';
+import ConfirmModal from './ConfirmModal';
 
 interface SubjectListProps {
   program: string;
@@ -23,6 +24,13 @@ const SubjectList: React.FC<SubjectListProps> = ({ program, userRole }) => {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSemester, setSelectedSemester] = useState<string>('all');
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    subject: Subject | null;
+  }>({
+    isOpen: false,
+    subject: null
+  });
 
   const { showToast } = useToast();
 
@@ -150,20 +158,38 @@ const SubjectList: React.FC<SubjectListProps> = ({ program, userRole }) => {
     setShowAddModal(true);
   };
 
-  const handleDelete = async (subject: Subject) => {
-    if (!window.confirm(`A jeni te sigurt qe doni te fshini lenden "${subject.name}"?`)) {
+  const handleDeleteClick = (subject: Subject) => {
+    setConfirmModal({
+      isOpen: true,
+      subject
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmModal.subject) return;
+    // Use id or _id for deletion
+    const subjectId = confirmModal.subject.id || (confirmModal.subject as any)._id;
+    if (!subjectId || subjectId === 'undefined') {
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'ID e lendes mungon ose eshte e pavlefshme!',
+        duration: 4000
+      });
+      console.error('Subject delete failed: invalid id', confirmModal.subject);
+      setConfirmModal({ isOpen: false, subject: null });
       return;
     }
-
     try {
-      await apiService.deleteSubject(subject.id);
+      await apiService.deleteSubject(subjectId);
       showToast({
         type: 'success',
         title: 'Sukses!',
-        message: 'Lenda u fshi me sukses!',
+        message: `Lenda "${confirmModal.subject.name}" u fshi me sukses!`,
         duration: 4000
       });
       loadSubjects();
+      setConfirmModal({ isOpen: false, subject: null });
     } catch (error: any) {
       console.error('Error deleting subject:', error);
       showToast({
@@ -173,6 +199,10 @@ const SubjectList: React.FC<SubjectListProps> = ({ program, userRole }) => {
         duration: 5000
       });
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmModal({ isOpen: false, subject: null });
   };
 
   const resetForm = () => {
@@ -298,7 +328,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ program, userRole }) => {
                               <Edit className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(subject)}
+                              onClick={() => handleDeleteClick(subject)}
                               className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                               title="Fshi lenden"
                             >
@@ -426,6 +456,19 @@ const SubjectList: React.FC<SubjectListProps> = ({ program, userRole }) => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Fshi Lenden"
+        message={`A jeni të sigurt që dëshironi të fshini lendën "${confirmModal.subject?.name}"? Ky veprim nuk mund të anulohet.`}
+        confirmText="Fshi"
+        cancelText="Anulo"
+        type="danger"
+        loading={false}
+      />
     </div>
   );
 };

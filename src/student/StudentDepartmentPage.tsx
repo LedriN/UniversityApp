@@ -13,6 +13,7 @@ import {
   X,
   BookOpen
 } from 'lucide-react';
+import { useToast } from '../components/ToastContainer';
 import { apiService } from '../services/api';
 import { Lecture, Student, Subject } from '../types';
 import { useApp } from '../context/AppContext';
@@ -20,6 +21,7 @@ import StudentLayout from '../components/StudentLayout';
 
 const StudentDepartmentPage: React.FC = () => {
   const { currentUser } = useApp();
+  const { showToast } = useToast();
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [studentData, setStudentData] = useState<Student | null>(null);
@@ -112,7 +114,12 @@ const StudentDepartmentPage: React.FC = () => {
       console.log('Lecture ID:', lecture.id);
       
       if (!lecture.id) {
-        alert('Lecture ID is missing. Please try again.');
+        showToast({
+          type: 'error',
+          title: 'Gabim!',
+          message: 'ID-ja e leksionit mungon. Ju lutemi provoni përsëri.',
+          duration: 4000
+        });
         return;
       }
       
@@ -128,9 +135,21 @@ const StudentDepartmentPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
+      showToast({
+        type: 'success',
+        title: 'Shkarkimi u përfundua!',
+        message: `"${lecture.title}" u shkarkua me sukses.`,
+        duration: 4000
+      });
     } catch (err: any) {
       console.error('Download failed:', err);
-      alert('Failed to download lecture');
+      showToast({
+        type: 'error',
+        title: 'Gabim gjatë shkarkimit!',
+        message: 'Gabim gjatë shkarkimit të leksionit. Ju lutemi provoni përsëri.',
+        duration: 5000
+      });
     } finally {
       setDownloadingId(null);
     }

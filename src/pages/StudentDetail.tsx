@@ -241,7 +241,6 @@ const StudentDetail: React.FC = () => {
        pdf.setFont('helvetica', 'normal');
        
        addInfoRow('Username', student.userCredentials.username);
-       addInfoRow('Fjalëkalimi', student.userCredentials.password);
        addInfoRow('Email', student.email);
      }
      
@@ -513,6 +512,7 @@ const StudentDetail: React.FC = () => {
                 <Edit className="h-4 w-4 mr-2" />
                 Modifiko të Dhënat
               </Link>
+              <div className='flex flex-row gap-2'>
               <button
                 onClick={() => exportToPDF().catch(console.error)}
                 className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
@@ -520,6 +520,14 @@ const StudentDetail: React.FC = () => {
                 <Download className="h-4 w-4 mr-2" />
                 Shkarko PDF
               </button>
+              <button
+                onClick={() => exportToPDF().catch(console.error)}
+                className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Shkarko Kontraten
+              </button>
+              </div>
             </div>
           </div>
         </div>

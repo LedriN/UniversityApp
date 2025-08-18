@@ -132,21 +132,22 @@ router.put('/:id', [
   }
 });
 
-// @route   DELETE /api/subjects/:id
-// @desc    Delete subject
-// @access  Private
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const subject = await Subject.findByIdAndDelete(req.params.id);
-    
-    if (!subject) {
-      return res.status(404).json({ message: 'Subject not found' });
-    }
+router.delete('/subjects/:id', async (req, res) => {
+  const subjectId = req.params.id;
 
-    res.json({ message: 'Subject deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting subject:', error);
-    res.status(500).json({ message: 'Server error' });
+  // Validate the id
+  if (!subjectId || subjectId === "undefined") {
+    return res.status(400).json({ error: "Invalid subject id" });
+  }
+
+  try {
+    const deleted = await Subject.findByIdAndDelete(subjectId);
+    if (!deleted) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+    res.json({ message: "Subject deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, X, FileText, AlertCircle } from 'lucide-react';
+import { useToast } from './ToastContainer';
 import { apiService } from '../services/api';
 import { Lecture } from '../types';
 
@@ -21,6 +22,7 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -34,11 +36,23 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       if (file.type !== 'application/pdf') {
-        setError('Only PDF files are allowed');
+        setError('Vetëm skedarë PDF lejohen');
+        showToast({
+          type: 'error',
+          title: 'Format i gabuar!',
+          message: 'Vetëm skedarë PDF lejohen. Ju lutemi zgjidhni një skedar PDF.',
+          duration: 4000
+        });
         return;
       }
       if (file.size > 10 * 1024 * 1024) { // 10MB
-        setError('File size must be less than 10MB');
+        setError('Madhësia e skedarit duhet të jetë më pak se 10MB');
+        showToast({
+          type: 'error',
+          title: 'Skedar shumë i madh!',
+          message: 'Madhësia e skedarit duhet të jetë më pak se 10MB.',
+          duration: 4000
+        });
         return;
       }
       setSelectedFile(file);
@@ -50,7 +64,13 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      setError('Title is required');
+      setError('Titulli është i detyrueshëm');
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Titulli i leksionit është i detyrueshëm.',
+        duration: 4000
+      });
       return;
     }
 
@@ -71,7 +91,14 @@ const LectureUpload: React.FC<LectureUploadProps> = ({
       const response = await apiService.uploadLecture(uploadFormData);
       onUploadSuccess(response.lecture);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to upload lecture');
+      const errorMessage = err.response?.data?.message || 'Gabim gjatë ngarkimit të leksionit';
+      setError(errorMessage);
+      showToast({
+        type: 'error',
+        title: 'Gabim gjatë ngarkimit!',
+        message: errorMessage,
+        duration: 5000
+      });
     } finally {
       setIsUploading(false);
     }

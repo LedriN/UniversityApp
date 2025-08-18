@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Trash2, Upload, FileText, Calendar, User, AlertCircle } from 'lucide-react';
+import { useToast } from './ToastContainer';
 import { apiService } from '../services/api';
 import { Lecture } from '../types';
 import LectureUpload from './LectureUpload';
+import ConfirmModal from './ConfirmModal';
 
 interface LectureListProps {
   program: string;
@@ -16,6 +18,14 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
   const [showUpload, setShowUpload] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    lecture: Lecture | null;
+  }>({
+    isOpen: false,
+    lecture: null
+  });
+  const { showToast } = useToast();
 
   const fetchLectures = async () => {
     try {
@@ -24,7 +34,13 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
       setLectures(data);
       setError('');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch lectures');
+      setError(err.response?.data?.message || 'Gabim gjatë ngarkimit të leksioneve');
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Gabim gjatë ngarkimit të leksioneve. Ju lutemi provoni përsëri.',
+        duration: 5000
+      });
     } finally {
       setLoading(false);
     }
@@ -37,12 +53,23 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
   const handleUploadSuccess = (lecture: Lecture) => {
     setLectures(prev => [lecture, ...prev]);
     setShowUpload(false);
+    showToast({
+      type: 'success',
+      title: 'Leksioni u ngarkua me sukses!',
+      message: `"${lecture.title}" u shtua në programin ${program}.`,
+      duration: 5000
+    });
   };
 
   const handleDownload = async (lecture: Lecture) => {
     // Check if lecture has a PDF file
     if (!lecture.filePath || !lecture.fileName) {
-      alert('This lecture does not have a PDF file to download');
+      showToast({
+        type: 'error',
+        title: 'Gabim!',
+        message: 'Ky leksion nuk ka skedar PDF për të shkarkuar.',
+        duration: 4000
+      });
       return;
     }
 
@@ -59,29 +86,64 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
+      showToast({
+        type: 'success',
+        title: 'Shkarkimi u përfundua!',
+        message: `"${lecture.title}" u shkarkua me sukses.`,
+        duration: 4000
+      });
     } catch (err: any) {
       console.error('Download failed:', err);
-      alert('Failed to download lecture');
+      showToast({
+        type: 'error',
+        title: 'Gabim gjatë shkarkimit!',
+        message: 'Gabim gjatë shkarkimit të leksionit. Ju lutemi provoni përsëri.',
+        duration: 5000
+      });
     } finally {
       setDownloadingId(null);
     }
   };
 
-  const handleDelete = async (lectureId: string) => {
-    if (!confirm('Are you sure you want to delete this lecture?')) {
-      return;
-    }
+  const handleDeleteClick = (lecture: Lecture) => {
+    setConfirmModal({
+      isOpen: true,
+      lecture
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmModal.lecture) return;
 
     try {
-      setDeletingId(lectureId);
-      await apiService.deleteLecture(lectureId);
-      setLectures(prev => prev.filter(l => l.id !== lectureId));
+      setDeletingId(confirmModal.lecture.id);
+      await apiService.deleteLecture(confirmModal.lecture.id);
+      setLectures(prev => prev.filter(l => l.id !== confirmModal.lecture!.id));
+      
+      showToast({
+        type: 'success',
+        title: 'Leksioni u fshi me sukses!',
+        message: `"${confirmModal.lecture.title}" u hoq nga lista e leksioneve.`,
+        duration: 4000
+      });
+      
+      setConfirmModal({ isOpen: false, lecture: null });
     } catch (err: any) {
       console.error('Delete failed:', err);
-      alert('Failed to delete lecture');
+      showToast({
+        type: 'error',
+        title: 'Gabim gjatë fshirjes!',
+        message: 'Gabim gjatë fshirjes së leksionit. Ju lutemi provoni përsëri.',
+        duration: 5000
+      });
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmModal({ isOpen: false, lecture: null });
   };
 
   const formatFileSize = (bytes: number) => {
@@ -211,7 +273,7 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
                   
                   {(userRole === 'admin' || userRole === 'staff') && (
                     <button
-                      onClick={() => handleDelete(lecture.id)}
+                      onClick={() => handleDeleteClick(lecture)}
                       disabled={deletingId === lecture.id}
                       className="flex items-center gap-1 px-3 py-2 text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
                     >
@@ -234,6 +296,19 @@ const LectureList: React.FC<LectureListProps> = ({ program, userRole }) => {
           onCancel={() => setShowUpload(false)}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Fshi Leksionin"
+        message={`A jeni të sigurt që dëshironi të fshini leksionin "${confirmModal.lecture?.title}"? Ky veprim nuk mund të anulohet.`}
+        confirmText="Fshi"
+        cancelText="Anulo"
+        type="danger"
+        loading={deletingId === confirmModal.lecture?.id}
+      />
     </div>
   );
 };

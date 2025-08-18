@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, Eye, Edit, Trash2, Plus, Download } from 'lucide-react';
 import { useToast } from '../components/ToastContainer';
 import DeleteModal from '../components/DeleteModal';
@@ -18,7 +18,7 @@ const StudentList: React.FC = () => {
     isOpen: false,
     student: null
   });
-
+  const navigate = useNavigate();
   // Debug: Log first student to check email field
   React.useEffect(() => {
     if (students.length > 0) {
@@ -107,18 +107,18 @@ const StudentList: React.FC = () => {
       await deleteStudent(deleteModal.student.id);
       showToast({
         type: 'success',
-        title: 'Sukses!',
-        message: 'Studenti u fshi me sukses!',
-        duration: 4000
+        title: 'Studenti u fshi me sukses!',
+        message: `${deleteModal.student.firstName} ${deleteModal.student.lastName} u hoq nga lista e studentëve.`,
+        duration: 5000
       });
       setDeleteModal({ isOpen: false, student: null });
     } catch (error) {
       console.error('Error deleting student:', error);
       showToast({
         type: 'error',
-        title: 'Gabim!',
+        title: 'Gabim gjatë fshirjes!',
         message: 'Gabim gjatë fshirjes së studentit. Ju lutemi provoni përsëri.',
-        duration: 5000
+        duration: 6000
       });
     } finally {
       setLoading(false);
@@ -401,7 +401,7 @@ const StudentList: React.FC = () => {
                             {student.firstName.charAt(0)}{student.lastName.charAt(0)}
                           </span>
                         </div>
-                        <div className="ml-4">
+                        <div onClick={() => navigate(`/admin/students/${student.id}`)} className="ml-4 cursor-pointer">
                           <div className="text-sm font-medium text-gray-900 capitalize">
                             {student.firstName} {student.lastName}
                           </div>

@@ -49,15 +49,15 @@ const Toast: React.FC<ToastProps> = ({ id, type, title, message, duration = 5000
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200';
+        return 'bg-white border-green-200 shadow-green-100';
       case 'error':
-        return 'bg-red-50 border-red-200';
+        return 'bg-white border-red-200 shadow-red-100';
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-white border-yellow-200 shadow-yellow-100';
       case 'info':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-white border-blue-200 shadow-blue-100';
       default:
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-white border-blue-200 shadow-blue-100';
     }
   };
 
@@ -78,11 +78,11 @@ const Toast: React.FC<ToastProps> = ({ id, type, title, message, duration = 5000
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full transform transition-all duration-300 ease-in-out ${
-        isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      className={`max-w-sm w-full transform transition-all duration-300 ease-in-out ${
+        isVisible ? 'translate-x-0 opacity-100 scale-100' : 'translate-x-full opacity-0 scale-95'
       }`}
     >
-      <div className={`rounded-lg border p-4 shadow-lg ${getBackgroundColor()}`}>
+      <div className={`rounded-lg border-2 p-4 shadow-xl backdrop-blur-sm ${getBackgroundColor()}`}>
         <div className="flex items-start">
           <div className="flex-shrink-0">
             {getIcon()}
