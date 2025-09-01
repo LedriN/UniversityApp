@@ -9,6 +9,50 @@ import { Student, PaymentRecord } from '../types';
 import PaymentRecordModal from '../components/PaymentRecordModal';
 import PaymentRecordsList from '../components/PaymentRecordsList';
 
+// Hardcoded Kosovo cities
+const KOSOVO_CITIES = [
+  // Major Cities
+  { name: 'Prishtinë', region: 'Prishtinë' },
+  { name: 'Prizren', region: 'Prizren' },
+  { name: 'Pejë', region: 'Pejë' },
+  { name: 'Gjakovë', region: 'Gjakovë' },
+  { name: 'Gjilan', region: 'Gjilan' },
+  { name: 'Mitrovicë', region: 'Mitrovicë' },
+  { name: 'Ferizaj', region: 'Ferizaj' },
+  
+  // Other Important Cities
+  { name: 'Vushtrri', region: 'Mitrovicë' },
+  { name: 'Podujevë', region: 'Prishtinë' },
+  { name: 'Lipjan', region: 'Prishtinë' },
+  { name: 'Kamenicë', region: 'Gjilan' },
+  { name: 'Viti', region: 'Gjilan' },
+  { name: 'Deçan', region: 'Pejë' },
+  { name: 'Istog', region: 'Pejë' },
+  { name: 'Klinë', region: 'Pejë' },
+  { name: 'Skënderaj', region: 'Mitrovicë' },
+  { name: 'Obiliq', region: 'Prishtinë' },
+  { name: 'Drenas', region: 'Prishtinë' },
+  { name: 'Shtime', region: 'Ferizaj' },
+  { name: 'Kaçanik', region: 'Ferizaj' },
+  { name: 'Shtërpcë', region: 'Ferizaj' },
+  { name: 'Dragash', region: 'Prizren' },
+  { name: 'Malishevë', region: 'Prizren' },
+  { name: 'Rahovec', region: 'Prizren' },
+  { name: 'Suharekë', region: 'Prizren' },
+  { name: 'Novobërdë', region: 'Prishtinë' },
+  { name: 'Ranillug', region: 'Gjilan' },
+  { name: 'Partesh', region: 'Gjilan' },
+  { name: 'Kllokot', region: 'Gjilan' },
+  { name: 'Graçanicë', region: 'Prishtinë' },
+  { name: 'Fushë Kosovë', region: 'Prishtinë' },
+  { name: 'Hani i Elezit', region: 'Ferizaj' },
+  { name: 'Mamushë', region: 'Prizren' },
+  { name: 'Zubin Potok', region: 'Mitrovicë' },
+  { name: 'Zveçan', region: 'Mitrovicë' },
+  { name: 'Leposaviq', region: 'Mitrovicë' },
+  { name: 'Mitrovica e Veriut', region: 'Mitrovicë' }
+];
+
 const StudentForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -78,15 +122,6 @@ const StudentForm: React.FC = () => {
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
-  const [cities, setCities] = useState<Array<{
-    id: string;
-    name: string;
-    nameAlbanian: string;
-    region: string;
-    population: number;
-    isActive: boolean;
-  }>>([]);
-  const [loadingCities, setLoadingCities] = useState(false);
   const phoneValidationTimeoutRef = React.useRef<number | null>(null);
 
   const programs = [
@@ -109,23 +144,6 @@ const StudentForm: React.FC = () => {
       loadStudentID();
     }
   }, [isEditing]);
-
-  // Load cities
-  useEffect(() => {
-    const loadCities = async () => {
-      try {
-        setLoadingCities(true);
-        const citiesData = await apiService.getCities();
-        setCities(citiesData);
-      } catch (error) {
-        console.error('Error loading cities:', error);
-      } finally {
-        setLoadingCities(false);
-      }
-    };
-    
-    loadCities();
-  }, []);
 
   // Trigger validation when form data changes to update submit button state
   useEffect(() => {
@@ -1032,17 +1050,15 @@ const StudentForm: React.FC = () => {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('city')
                 }`}
-                disabled={loadingCities}
               >
                 <option value="">Zgjidh qytetin</option>
-                {cities.map(city => (
-                  <option key={city.id} value={city.nameAlbanian}>
-                    {city.nameAlbanian} ({city.region})
+                {KOSOVO_CITIES.map(city => (
+                  <option key={city.name} value={city.name}>
+                    {city.name} ({city.region})
                   </option>
                 ))}
               </select>
               {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
-              {loadingCities && <p className="mt-1 text-sm text-gray-500">Duke ngarkuar qytetet...</p>}
             </div>
 
             <div>

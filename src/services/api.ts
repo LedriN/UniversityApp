@@ -195,12 +195,8 @@ class ApiService {
 
   // City methods
   async getCities(): Promise<Array<{
-    id: string;
     name: string;
-    nameAlbanian: string;
     region: string;
-    population: number;
-    isActive: boolean;
   }>> {
     const response = await this.api.get('/cities');
     return response.data;
