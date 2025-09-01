@@ -1024,7 +1024,7 @@ const StudentForm: React.FC = () => {
                              <p className="mt-1 text-xs text-gray-500">Shkruani numrin e telefonit në çdo format të dëshiruar</p>
             </div>
 
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Adresa <span className="text-red-500">*</span>
               </label>
