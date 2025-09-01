@@ -47,12 +47,17 @@ const studentSchema = new mongoose.Schema({
     trim: true,
     maxlength: [200, 'Address cannot exceed 200 characters']
   },
+  city: {
+    type: String,
+    required: [true, 'City is required'],
+    trim: true
+  },
   phone: {
     type: String,
     required: [true, 'Phone number is required'],
     unique: true,
     trim: true,
-    match: [/^\d{3}-\d{3}-\d{3}$/, 'Please enter a valid phone number in format XXX-XXX-XXX']
+    match: [/^[\d+\s\-()]+$/, 'Phone number can only contain numbers, +, spaces, dashes, and parentheses']
   },
   email: {
     type: String,

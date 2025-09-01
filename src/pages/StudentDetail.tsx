@@ -1,16 +1,18 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, Download, Phone, Mail, MapPin, Calendar, User, GraduationCap, CreditCard } from 'lucide-react';
+import { ArrowLeft, Edit, Download, Phone, Mail, MapPin, Calendar, User, GraduationCap, CreditCard, Euro, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { apiService } from '../services/api';
 import { useAsyncOperation } from '../hooks/useApi';
-import { Student } from '../types';
+import { Student, PaymentRecord } from '../types';
 
 const StudentDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
+  const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
   const { loading, execute } = useAsyncOperation();
 
   useEffect(() => {
@@ -19,12 +21,51 @@ const StudentDetail: React.FC = () => {
         const result = await execute(() => apiService.getStudentById(id));
         if (result) {
           setStudent(result);
+          // Load payment records
+          loadPaymentRecords(id);
         }
       };
       
       loadStudent();
     }
   }, [id]);
+
+  const loadPaymentRecords = async (studentId: string) => {
+    try {
+      setLoadingPayments(true);
+      const records = await apiService.getPaymentRecords(studentId);
+      
+      // If student has paid amount but no payment records, create a virtual initial payment record
+      if (student && student.paidAmount > 0 && records.length === 0) {
+        const initialPaymentRecord: PaymentRecord = {
+          id: 'initial-payment',
+          studentId: studentId,
+          amount: student.paidAmount,
+          paymentDate: student.createdAt,
+          description: 'Pagesa fillestare',
+          receiptNumber: 'INITIAL',
+          recordedBy: {
+            id: 'system',
+            username: 'Sistemi'
+          },
+          createdAt: student.createdAt,
+          updatedAt: student.createdAt,
+          formattedPaymentDate: new Date(student.createdAt).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+        };
+        setPaymentRecords([initialPaymentRecord]);
+      } else {
+        setPaymentRecords(records);
+      }
+    } catch (error) {
+      console.error('Error loading payment records:', error);
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -66,6 +107,46 @@ const StudentDetail: React.FC = () => {
   const calculateProgress = () => {
     if (student.totalAmount === 0) return 0;
     return Math.min(100, (student.paidAmount / student.totalAmount) * 100);
+  };
+
+  const exportPaymentsToCSV = () => {
+    if (paymentRecords.length === 0) return;
+
+    // CSV headers
+    const headers = [
+      'Data e Pagesës',
+      'Shuma (€)',
+      'Përshkrimi',
+      'Numri i Faturës',
+      'Regjistruar nga',
+      'Data e Regjistrimit'
+    ];
+
+    // CSV data rows
+    const csvData = paymentRecords.map(record => [
+      new Date(record.paymentDate).toLocaleDateString('sq-AL'),
+      record.amount.toFixed(2),
+      record.description || '',
+      record.receiptNumber || '',
+      record.recordedBy.username,
+      new Date(record.createdAt).toLocaleDateString('sq-AL')
+    ]);
+
+    // Combine headers and data
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pagesat_${student?.firstName}_${student?.lastName}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const exportToPDF = async () => {
@@ -297,6 +378,14 @@ const StudentDetail: React.FC = () => {
             <Download className="h-4 w-4 mr-2" />
             Eksporto PDF
           </button>
+          <button
+            onClick={exportPaymentsToCSV}
+            disabled={paymentRecords.length === 0}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Eksporto Pagesat CSV
+          </button>
           <Link
             to={`/admin/students/${student.id}/edit`}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -431,6 +520,130 @@ const StudentDetail: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Payment Records Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <Euro className="h-6 w-6 text-green-600" />
+                <h3 className="text-lg font-medium text-gray-900">Historiku i Pagesave</h3>
+              </div>
+              <button
+                onClick={exportPaymentsToCSV}
+                disabled={paymentRecords.length === 0}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Eksporto CSV
+              </button>
+            </div>
+            
+            {loadingPayments ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Duke ngarkuar pagesat...</span>
+              </div>
+            ) : paymentRecords.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
+                  <Euro className="h-6 w-6 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nuk ka pagesa</h3>
+                <p className="text-gray-500">Nuk u gjetën pagesa për këtë student.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Data
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Shuma
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Përshkrimi
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Regjistruar nga
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {paymentRecords.map((record) => (
+                          <tr key={record.id} className={`hover:bg-gray-50 ${record.id === 'initial-payment' ? 'bg-blue-50' : ''}`}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                                <span className="text-sm text-gray-900">
+                                  {new Date(record.paymentDate).toLocaleDateString('sq-AL')}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm font-medium text-green-600">
+                                €{record.amount.toLocaleString()}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900">
+                                {record.description ? (
+                                  <div className="flex items-start">
+                                    <FileText className="h-4 w-4 text-gray-400 mr-2 mt-0.5 flex-shrink-0" />
+                                    <span className="truncate max-w-xs">{record.description}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
+                                )}
+                                {record.receiptNumber && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    Fatura: {record.receiptNumber}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 text-gray-400 mr-2" />
+                                <span className="text-sm text-gray-900">{record.recordedBy.username}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Totali i pagesave:</span>
+                      <span className="ml-2 font-medium text-green-600">
+                        €{paymentRecords.reduce((sum, record) => sum + record.amount, 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Numri i pagesave:</span>
+                      <span className="ml-2 font-medium text-gray-900">
+                        {paymentRecords.length}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Pagesa e fundit:</span>
+                      <span className="ml-2 font-medium text-gray-900">
+                        {paymentRecords.length > 0 ? new Date(paymentRecords[0].paymentDate).toLocaleDateString('sq-AL') : '-'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -528,6 +741,14 @@ const StudentDetail: React.FC = () => {
                 Shkarko Kontraten
               </button>
               </div>
+              <button
+                onClick={exportPaymentsToCSV}
+                disabled={paymentRecords.length === 0}
+                className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Eksporto Pagesat CSV
+              </button>
             </div>
           </div>
         </div>

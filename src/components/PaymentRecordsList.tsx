@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, Euro, Calendar, User, FileText } from 'lucide-react';
+import { Trash2, Euro, Calendar, User, FileText, Download } from 'lucide-react';
 import { PaymentRecord } from '../types';
 
 interface PaymentRecordsListProps {
@@ -21,6 +21,46 @@ const PaymentRecordsList: React.FC<PaymentRecordsListProps> = ({
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const exportToCSV = () => {
+    if (paymentRecords.length === 0) return;
+
+    // CSV headers
+    const headers = [
+      'Data e Pagesës',
+      'Shuma (€)',
+      'Përshkrimi',
+      'Numri i Faturës',
+      'Regjistruar nga',
+      'Data e Regjistrimit'
+    ];
+
+    // CSV data rows
+    const csvData = paymentRecords.map(record => [
+      new Date(record.paymentDate).toLocaleDateString('sq-AL'),
+      record.amount.toFixed(2),
+      record.description || '',
+      record.receiptNumber || '',
+      record.recordedBy.username,
+      new Date(record.createdAt).toLocaleDateString('sq-AL')
+    ]);
+
+    // Combine headers and data
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pagesat_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loading) {
@@ -50,6 +90,14 @@ const PaymentRecordsList: React.FC<PaymentRecordsListProps> = ({
         <h3 className="text-lg font-medium text-gray-900">
           Historiku i Pagesave ({paymentRecords.length})
         </h3>
+        <button
+          onClick={exportToCSV}
+          disabled={paymentRecords.length === 0}
+          className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Eksporto CSV
+        </button>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">

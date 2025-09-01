@@ -59,6 +59,7 @@ const StudentForm: React.FC = () => {
     gender: 'M' as 'M' | 'F',
     dateOfBirth: '',
     address: '',
+    city: '',
     phone: '',
     email: '',
     previousSchool: '',
@@ -77,6 +78,15 @@ const StudentForm: React.FC = () => {
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loadingPayments, setLoadingPayments] = useState(false);
+  const [cities, setCities] = useState<Array<{
+    id: string;
+    name: string;
+    nameAlbanian: string;
+    region: string;
+    population: number;
+    isActive: boolean;
+  }>>([]);
+  const [loadingCities, setLoadingCities] = useState(false);
   const phoneValidationTimeoutRef = React.useRef<number | null>(null);
 
   const programs = [
@@ -99,6 +109,23 @@ const StudentForm: React.FC = () => {
       loadStudentID();
     }
   }, [isEditing]);
+
+  // Load cities
+  useEffect(() => {
+    const loadCities = async () => {
+      try {
+        setLoadingCities(true);
+        const citiesData = await apiService.getCities();
+        setCities(citiesData);
+      } catch (error) {
+        console.error('Error loading cities:', error);
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+    
+    loadCities();
+  }, []);
 
   // Trigger validation when form data changes to update submit button state
   useEffect(() => {
@@ -130,6 +157,7 @@ const StudentForm: React.FC = () => {
             gender: result.gender,
             dateOfBirth: result.dateOfBirth,
             address: result.address,
+            city: result.city || '',
             phone: result.phone,
             email: result.email,
             previousSchool: result.previousSchool,
@@ -198,6 +226,7 @@ const StudentForm: React.FC = () => {
      if (!formData.parentName.trim()) newErrors.parentName = 'Emri i prindit është i detyrueshëm';
      if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Data e lindjes është e detyrueshme';
      if (!formData.address.trim()) newErrors.address = 'Adresa është e detyrueshme';
+     if (!formData.city.trim()) newErrors.city = 'Qyteti është i detyrueshëm';
      if (!formData.phone.trim()) newErrors.phone = 'Numri i telefonit është i detyrueshëm';
      if (!formData.email.trim()) newErrors.email = 'Email-i është i detyrueshëm';
      if (!formData.program || formData.program === '' || formData.program === 'Zgjidh programin') newErrors.program = 'Zgjedh programin';
@@ -214,10 +243,10 @@ const StudentForm: React.FC = () => {
       newErrors.email = 'Format i pavlefshëm email-i';
     }
 
-    // Phone validation
-    const phoneRegex = /^\d{3}-\d{3}-\d{3}$/;
+    // Phone validation - allow any format with numbers and +
+    const phoneRegex = /^[\d+\s\-()]+$/;
     if (formData.phone && !phoneRegex.test(formData.phone)) {
-      newErrors.phone = 'Format i numrit të telefonit duhet të jetë XXX-XXX-XXX';
+      newErrors.phone = 'Numri i telefonit mund të përmbajë vetëm numra, +, hapësira, vizat dhe kllapa';
     }
 
     // Date validation
@@ -320,10 +349,33 @@ const StudentForm: React.FC = () => {
         });
         navigate('/students');
       } else {
-         await addStudent({
-           ...formData,
-           paidAmount: formData.paidAmount ?? 0
-         });
+        // Create student directly through API service to get the response
+        const newStudent = await apiService.createStudent({
+          ...formData,
+          paidAmount: formData.paidAmount ?? 0
+        });
+        
+        // Add to context state
+        addStudent({
+          ...formData,
+          paidAmount: formData.paidAmount ?? 0
+        });
+        
+        // If student has an initial payment, create a payment record
+        if (newStudent && formData.paidAmount && formData.paidAmount > 0) {
+          try {
+            await apiService.addPaymentRecord({
+              studentId: newStudent.id,
+              amount: formData.paidAmount,
+              paymentDate: new Date().toISOString(),
+              description: 'Pagesa fillestare',
+              receiptNumber: 'INITIAL'
+            });
+          } catch (error) {
+            console.error('Error creating initial payment record:', error);
+            // Don't fail the student creation if payment record creation fails
+          }
+        }
         
         // Show success toast with login credentials for new students
         const username = `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`;
@@ -335,12 +387,17 @@ const StudentForm: React.FC = () => {
               <div><strong>🆔 Student ID:</strong> {formData.studentID}</div>
               <div><strong>👤 Username:</strong> {username}</div>
               <div><strong>📧 Email:</strong> {formData.email}</div>
-                             <div className="text-green-600 font-medium">
-                 ✅ Fjalekalimi u gjenerua dhe u dergua ne email-in e studentit.
-               </div>
-               <div className="text-orange-600 text-sm">
-                 💡 Kontrolloni email-in e studentit per kredencialet e hyrjes.
-               </div>
+              {formData.paidAmount && formData.paidAmount > 0 && (
+                <div className="text-green-600 font-medium">
+                  ✅ Pagesa fillestare prej €{formData.paidAmount.toLocaleString()} u regjistrua në historik
+                </div>
+              )}
+              <div className="text-green-600 font-medium">
+                ✅ Fjalekalimi u gjenerua dhe u dergua ne email-in e studentit.
+              </div>
+              <div className="text-orange-600 text-sm">
+                💡 Kontrolloni email-in e studentit per kredencialet e hyrjes.
+              </div>
             </div>
           ),
           duration: 6000
@@ -421,6 +478,17 @@ const StudentForm: React.FC = () => {
       setErrors(newErrors);
     }
     
+    // Real-time validation for city
+    if (field === 'city') {
+      const newErrors = { ...errors };
+      if (!value || value === '' || value === 'Zgjidh qytetin') {
+        newErrors.city = 'Zgjedh qytetin';
+      } else {
+        delete newErrors.city;
+      }
+      setErrors(newErrors);
+    }
+    
     // Real-time validation for date of birth
     if (field === 'dateOfBirth' && value) {
       const birthDate = new Date(value as string);
@@ -485,32 +553,22 @@ const StudentForm: React.FC = () => {
       // Set up debounced validation
       phoneValidationTimeoutRef.current = setTimeout(() => {
         if (value && typeof value === 'string') {
-          const phoneRegex = /^\d{3}-\d{3}-\d{3}$/;
+          const phoneRegex = /^[\d+\s\-()]+$/;
           if (!phoneRegex.test(value)) {
-            setErrors(prev => ({ ...prev, phone: 'Format i numrit të telefonit duhet të jetë XXX-XXX-XXX' }));
+            setErrors(prev => ({ ...prev, phone: 'Numri i telefonit mund të përmbajë vetëm numra, +, hapësira, vizat dhe kllapa' }));
           }
         }
       }, 3000); // 3 seconds delay
     }
   };
 
-  // Handle phone number input - auto-format as XXX-XXX-XXX
+  // Handle phone number input - allow any format with numbers and +
   const handlePhoneChange = (value: string) => {
-    // Remove all non-digits
-    const digitsOnly = value.replace(/\D/g, '');
+    // Allow only numbers, +, spaces, dashes, and parentheses
+    const cleanedValue = value.replace(/[^\d+\s\-()]/g, '');
     
-    // Format as XXX-XXX-XXX
-    let formattedValue = '';
-    if (digitsOnly.length <= 3) {
-      formattedValue = digitsOnly;
-    } else if (digitsOnly.length <= 6) {
-      formattedValue = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3)}`;
-    } else {
-      formattedValue = `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6, 9)}`;
-    }
-    
-    handleInputChange('phone', formattedValue);
-    debouncedDuplicateCheck('phone', formattedValue);
+    handleInputChange('phone', cleanedValue);
+    debouncedDuplicateCheck('phone', cleanedValue);
   };
 
   // Handle name input - auto-capitalize first letter of each word
@@ -528,7 +586,7 @@ const StudentForm: React.FC = () => {
   const isFormValid = () => {
     const requiredFields = [
       'studentID', 'firstName', 'lastName', 'parentName', 
-      'dateOfBirth', 'address', 'phone', 'email', 'program'
+      'dateOfBirth', 'address', 'city', 'phone', 'email', 'program'
     ];
     
     // Check required fields
@@ -941,11 +999,11 @@ const StudentForm: React.FC = () => {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   getFieldBorderColor('phone')
                 }`}
-                placeholder="044-123-456"
-                maxLength={11}
+                placeholder="+355 44 123 456"
+                maxLength={20}
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-                             <p className="mt-1 text-xs text-gray-500">Format: XXX-XXX-XXX (vetëm numra, vizat shtohen automatikisht)</p>
+                             <p className="mt-1 text-xs text-gray-500">Shkruani numrin e telefonit në çdo format të dëshiruar</p>
             </div>
 
             <div className="sm:col-span-2">
@@ -962,6 +1020,29 @@ const StudentForm: React.FC = () => {
                 placeholder="Rruga, Qyteti"
               />
               {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Qyteti <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.city}
+                onChange={(e) => handleInputChange('city', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  getFieldBorderColor('city')
+                }`}
+                disabled={loadingCities}
+              >
+                <option value="">Zgjidh qytetin</option>
+                {cities.map(city => (
+                  <option key={city.id} value={city.nameAlbanian}>
+                    {city.nameAlbanian} ({city.region})
+                  </option>
+                ))}
+              </select>
+              {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+              {loadingCities && <p className="mt-1 text-sm text-gray-500">Duke ngarkuar qytetet...</p>}
             </div>
 
             <div>
@@ -1044,7 +1125,6 @@ const StudentForm: React.FC = () => {
                 onChange={(e) => handleInputChange('academicYear', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="2024-2025">2024-2025</option>
                 <option value="2025-2026">2025-2026</option>
                 <option value="2026-2027">2026-2027</option>
                 <option value="2027-2028">2027-2028</option>

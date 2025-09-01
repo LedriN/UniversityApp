@@ -192,6 +192,19 @@ class ApiService {
   async deleteSubject(id: string): Promise<void> {
     await this.api.delete(`/subjects/${id}`);
   }
+
+  // City methods
+  async getCities(): Promise<Array<{
+    id: string;
+    name: string;
+    nameAlbanian: string;
+    region: string;
+    population: number;
+    isActive: boolean;
+  }>> {
+    const response = await this.api.get('/cities');
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();
