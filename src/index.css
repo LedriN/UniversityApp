@@ -6,3 +6,60 @@
 .m-0 {
     margin: 0px !important;
 }
+
+/* Responsive Sidebar Styles */
+@media (max-width: 1024px) {
+  .sidebar-responsive {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar-responsive.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+  
+  .sidebar-toggle {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 30;
+    background: white;
+    border-radius: 50%;
+    padding: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease-in-out;
+  }
+  
+  .sidebar-toggle:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Desktop styles (above 1024px) */
+@media (min-width: 1025px) {
+  .sidebar-responsive {
+    position: relative;
+    transform: none;
+    transition: width 0.3s ease-in-out;
+  }
+  
+  .sidebar-overlay,
+  .sidebar-toggle {
+    display: none;
+  }
+}
