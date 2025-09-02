@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../../public/assets/logo.svg';
+import logo from '/assets/logo.svg';
 
 interface StudentSidebarProps {
   sidebarOpen: boolean;
