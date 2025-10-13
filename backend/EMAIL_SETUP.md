@@ -23,6 +23,7 @@ JWT_SECRET=your_jwt_secret_key_here
 # Email Configuration for Nodemailer
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASSWORD=your_app_password_here
+ADMIN_EMAIL=admin@fama.edu.al
 
 # Server Configuration
 PORT=3001
@@ -85,15 +86,23 @@ When a new student is added to the system:
    - Generated password
    - Email address
    - Security instructions
+4. **NEW**: An admin notification email is sent to the admin email address containing:
+   - Information about the newly added student
+   - An Excel file attachment with all students' data
+   - Updated student list for record keeping
 
 ## Testing
 
 To test the email functionality:
 
-1. Make sure your `.env` file is properly configured
+1. Make sure your `.env` file is properly configured with:
+   - `EMAIL_USER`: Your email address
+   - `EMAIL_PASSWORD`: Your app password
+   - `ADMIN_EMAIL`: Admin email address to receive notifications
 2. Start the backend server
 3. Add a new student through the admin interface
 4. Check the student's email for the welcome message
+5. Check the admin email for the notification with Excel attachment
 
 ## Troubleshooting
 

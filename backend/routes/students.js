@@ -3,7 +3,7 @@ const { body, validationResult, query } = require('express-validator');
 const Student = require('../models/Student');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
-const { generatePassword, sendWelcomeEmail } = require('../utils/emailService');
+const { generatePassword, sendWelcomeEmail, sendAdminNotificationEmail } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -247,6 +247,28 @@ router.post('/', [
     } catch (userError) {
       console.error('Error creating user account:', userError);
       // Don't fail the student creation if user creation fails
+    }
+
+    // Send admin notification email with Excel attachment
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail) {
+        const adminEmailResult = await sendAdminNotificationEmail(
+          adminEmail, 
+          `${req.body.firstName} ${req.body.lastName}`, 
+          req.body.email
+        );
+        if (adminEmailResult.success) {
+          console.log(`✅ Admin notification email sent to: ${adminEmail}`);
+        } else {
+          console.error(`❌ Failed to send admin notification email to: ${adminEmail}`, adminEmailResult.error);
+        }
+      } else {
+        console.log('⚠️ ADMIN_EMAIL not configured. Admin notification skipped.');
+      }
+    } catch (adminEmailError) {
+      console.error('Error sending admin notification email:', adminEmailError);
+      // Don't fail the student creation if admin email fails
     }
 
     res.status(201).json(student);
