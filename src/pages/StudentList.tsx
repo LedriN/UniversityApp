@@ -87,6 +87,9 @@ const StudentList: React.FC = () => {
       }
 
       return true;
+    }).sort((a, b) => {
+      // Sort by studentID in descending order (latest to oldest)
+      return b.studentID.localeCompare(a.studentID);
     });
   }, [students, filters]);
 
