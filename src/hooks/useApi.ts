@@ -53,7 +53,8 @@ export function useAsyncOperation() {
       return result;
     } catch (error: any) {
       setError(error.response?.data?.message || error.message || 'An error occurred');
-      return null;
+      // Re-throw the error so it can be caught by the calling function
+      throw error;
     } finally {
       setLoading(false);
     }

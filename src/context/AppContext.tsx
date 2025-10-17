@@ -143,11 +143,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
     
-    const result = await execute(() => apiService.updateStudent(id, updates));
-    if (result) {
-      setStudents(prev => prev.map(student => 
-        student.id === id ? result : student
-      ));
+    try {
+      const result = await execute(() => apiService.updateStudent(id, updates));
+      if (result) {
+        setStudents(prev => prev.map(student => 
+          student.id === id ? result : student
+        ));
+      }
+    } catch (error) {
+      // Re-throw the error so it can be handled by the calling component
+      throw error;
     }
   };
 

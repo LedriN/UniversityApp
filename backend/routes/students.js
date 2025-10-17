@@ -147,7 +147,8 @@ router.get('/:id', auth, async (req, res) => {
 // @desc    Create new student
 // @access  Public
 router.post('/', [
-  body('studentID').trim().notEmpty().withMessage('Student ID is required'),
+  body('studentID').trim().notEmpty().withMessage('Student ID is required')
+    .matches(/^\d{2}\/\d{3}\/\d{2}$/).withMessage('Student ID must be in format XX/XXX/XX'),
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('parentName').trim().notEmpty().withMessage('Parent name is required'),
@@ -312,7 +313,7 @@ router.post('/', [
 router.put('/:id', [
   auth,
   body('studentID').optional().trim().notEmpty().withMessage('Student ID cannot be empty')
-    .matches(/^\d{10}$/).withMessage('Student ID must be exactly 10 digits'),
+    .matches(/^\d{2}\/\d{3}\/\d{2}$/).withMessage('Student ID must be in format XX/XXX/XX'),
   body('firstName').optional().trim().notEmpty().withMessage('First name cannot be empty'),
   body('lastName').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
   body('parentName').optional().trim().notEmpty().withMessage('Parent name cannot be empty'),
@@ -325,11 +326,22 @@ router.put('/:id', [
   body('program').optional().notEmpty().withMessage('Program cannot be empty'),
   body('academicYear').optional().matches(/^\d{4}-\d{4}$/).withMessage('Academic year must be in format YYYY-YYYY'),
   body('totalAmount').optional().isFloat({ min: 0 }).withMessage('Total amount must be a positive number'),
-  body('paidAmount').optional().isFloat({ min: 0 }).withMessage('Paid amount must be a positive number')
+  body('paidAmount').optional().custom((value) => {
+    if (value === undefined || value === null) return true;
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  }).withMessage('Paid amount must be a non-negative number')
 ], async (req, res) => {
   try {
+    console.log('Update student request:', {
+      id: req.params.id,
+      body: req.body,
+      user: req.user?.id
+    });
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ 
         message: 'Validation failed', 
         errors: errors.array() 
@@ -379,6 +391,11 @@ router.put('/:id', [
 
     Object.assign(student, req.body);
     await student.save();
+    
+    console.log('Student updated successfully:', {
+      id: student._id,
+      updatedFields: Object.keys(req.body)
+    });
 
     res.json(student);
   } catch (error) {
